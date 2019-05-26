@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     TPCarta cartas[52];
     TPPilhaCarta PilhasC[7];
     iniciarCartas(&cartas);
-    
+    inicializarCabecaPilhas(&PilhasC);
     int i,j;
     
         /*for(j=0; j<LIN; j++){
@@ -95,3 +95,14 @@ void iniciarCartas(TPCarta *cartas){
     }
 }
  
+void inicializarCabecaPilhas(TPPilhaCarta *pilhasCarta){
+    int i;
+    for(i=0; i<7; i++){
+        pilhasCarta[i].carta.ant = NULL;
+        pilhasCarta[i].carta.prox = NULL;
+        pilhasCarta[i].carta.cor = 'N';
+        pilhasCarta[i].carta.naipe = 'N';
+        pilhasCarta[i].carta.oculta = -1;
+        pilhasCarta[i].carta.valor = 0;
+    }
+}
