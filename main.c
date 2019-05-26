@@ -49,7 +49,8 @@ typedef struct historico TPHistorico;
 int main(int argc, char** argv) {
     TPCarta cartas[52];
     TPPilhaCarta PilhasC[7];
-    criarCartas(&cartas);
+    iniciarCartas(&cartas);
+    
     int i,j;
     
         /*for(j=0; j<LIN; j++){
@@ -77,19 +78,20 @@ void embaralharCartas(){
     
 }
 
-void criarCartas(TPCarta *cartas){
-    int i,j;
+void iniciarCartas(TPCarta *cartas){
+    int i,j, cont = 0;
     char naipes[4] = {'O', 'C', 'P', 'E'};
     char cor[4] = {'V', 'V', 'P', 'P'};
     for(i=0; i<4; i++){
         for(j=0; j<13; j++){
-            cartas->ant = NULL;
-            cartas->prox = NULL;
-            cartas->naipe = naipes[i];
-            cartas->oculta = 1;
-            cartas->valor = (j+1);
-            cartas->cor = cor[i];
+            cartas[cont].ant = NULL;
+            cartas[cont].prox = NULL;
+            cartas[cont].naipe = naipes[i];
+            cartas[cont].oculta = 1;
+            cartas[cont].valor = (j+1);
+            cartas[cont].cor = cor[i];
+            cont++;
         }
     }
 }
-
+ 
