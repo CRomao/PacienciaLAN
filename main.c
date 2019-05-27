@@ -52,42 +52,31 @@ int main(int argc, char** argv) {
     
     TPPilhaCarta PilhasC[7];
     iniciarCartas(&cartas);
-    printf("1: %p\n", &PilhasC);
+    //imp(&cartas);
+   // printf("\nDEPOIS\n");
+    embaralharCartas(&cartas);
+   // imp(&cartas);
+    //printf("1: %p\n", &PilhasC);
     inicializarCabecaPilhas(&PilhasC);
     distribuicaoInicial(&PilhasC, &cartas);
     imprimir(&PilhasC);
     int i,j;
     
-        /*for(j=0; j<LIN; j++){
-            PilhasC[0].carta[j].valor = 1;
-            PilhasC[1].carta[j].valor = 2;
-            PilhasC[2].carta[j].valor = 3;
-            PilhasC[3].carta[j].valor = 4;
-            PilhasC[4].carta[j].valor = 5;
-            PilhasC[5].carta[j].valor = 6;
-            PilhasC[6].carta[j].valor = 7;
-            printf("%d\t", PilhasC[0].carta[j].valor);
-            printf("%d\t", PilhasC[1].carta[j].valor);
-            printf("%d\t", PilhasC[2].carta[j].valor);
-            printf("%d\t", PilhasC[3].carta[j].valor);
-            printf("%d\t", PilhasC[4].carta[j].valor);
-            printf("%d\t", PilhasC[5].carta[j].valor);
-            printf("%d\t", PilhasC[6].carta[j].valor);
-            printf("\n");
-        }*/
-    
+ 
+
     return (EXIT_SUCCESS);
 }
 
-void embaralharCartas(TPCarta *cartas, TPCarta *cartasEmb){
-    int aux[52], cont = 0;
-    for(int i=0; i<52; i++){
-        aux[i] = -1;
-    }
-    while(cont != 52){
-        
-        
-    }
+void embaralharCartas(TPCarta *cartas){
+    srand(time(NULL));
+    int i, pos;
+    TPCarta aux;
+     for(i=0;i<51;i++) {
+      pos = i + rand()%(52 - i);
+      aux = cartas[i];
+      cartas[i] = cartas[pos];
+      cartas[pos] = aux;
+   }
 }
 
 void iniciarCartas(TPCarta *cartas){
@@ -109,14 +98,13 @@ void iniciarCartas(TPCarta *cartas){
 }
  
 void inicializarCabecaPilhas(TPPilhaCarta *pilhasCarta){
-    printf("2: %p\n", pilhasCarta);
-    printf("3: %p\n", *(pilhasCarta));
-//    printf("4: %p\n", *(*(pilhasCarta)));
     int i;
+    TPCarta *aux;
+    aux = malloc(sizeof(TPCarta));
     for(i=0; i<7; i++){
         pilhasCarta[i].carta = malloc(sizeof(TPCarta));
         pilhasCarta[i].carta->ant = NULL;
-        pilhasCarta[i].carta->prox = NULL;
+        pilhasCarta[i].carta->prox = aux;
         pilhasCarta[i].carta->cor = 'N';
         pilhasCarta[i].carta->naipe = 'N';
         pilhasCarta[i].carta->oculta = -1;
@@ -126,132 +114,61 @@ void inicializarCabecaPilhas(TPPilhaCarta *pilhasCarta){
 }
 
 void distribuicaoInicial(TPPilhaCarta *pilhasCarta, TPCarta *cartas){
-    int i= 1, tam = 51;
+    int tam = 51, i, lim = 7, j=0, cont=1;
     TPCarta *aux;
     aux = malloc(sizeof(TPCarta));
-    //Pilha 1
-    aux = pilhasCarta[0].carta;
-    while(i < 2){
-        aux->prox = &cartas[tam];
-        aux = aux->prox;
-        tam--;
-        i++;
-    }
-    i = 1;
-    //Pilha 2
-    aux = pilhasCarta[1].carta;
-    while(i < 3){
-        aux->prox = &cartas[tam];
-        aux = aux->prox;
-        tam--;
-        i++;
-    }
     
-    //Pilha 3
-    i = 1;
-    aux = pilhasCarta[2].carta;
-    while(i < 4){
-        aux->prox = &cartas[tam];
-        aux = aux->prox;
-        tam--;
-        i++;
-    }
-    
-    //Pilha 4
-    i = 1;
-    aux = pilhasCarta[3].carta;
-    while(i < 5){
-        aux->prox = &cartas[tam];
-        aux = aux->prox;
-        tam--;
-        i++;
-    }
-    //Pilha 5
-    i = 1;
-    aux = pilhasCarta[4].carta;
-    while(i < 6){
-        aux->prox = &cartas[tam];
-        aux = aux->prox;
-        tam--;
-        i++;
-    }
-    //Pilha 6
-    i = 1;
-    aux = pilhasCarta[5].carta;
-    while(i < 7){
-        aux->prox = &cartas[tam];
-        aux = aux->prox;
-        tam--;
-        i++;
-    }
-    //Pilha 7
-    i = 1;
-    aux = pilhasCarta[6].carta;
-    while(i < 8){
-        aux->prox = &cartas[tam];
-        aux = aux->prox;
-        tam--;
-        i++;
+    for(i=0; i<lim; i++){
+        aux = pilhasCarta[i].carta;
+        while(j < cont){
+            aux->prox = &cartas[tam];
+            aux = aux->prox;
+            tam--;
+            j++;
+        }
+        cont++;
+        j=0;
+        aux->oculta = 0;
     }
 }
 
 
 void imprimir(TPPilhaCarta *pilhasCarta){
     TPCarta *aux;
+    int lim = 7, i;
     aux = malloc(sizeof(TPCarta));
-    aux = pilhasCarta[0].carta->prox;
-    //Pilha 1
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
+    for(i=0; i<lim; i++){
+        aux = pilhasCarta[i].carta->prox;
+        while(aux != NULL){
+             if(aux->oculta == 0){
+                printf("%d%c  ", aux->valor, aux->naipe);
+            }else{
+                printf("* ");
+            }
+            aux = aux->prox;
+        }
+        printf("\n");
     }
-    printf("\n");
-    
-    //Pilha 2
-    aux = pilhasCarta[1].carta->prox;
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
+}
+
+
+
+void imp(TPCarta *cartas){
+    for(int i=0; i<52; i++){
+        if((i+1) % 13 == 0){
+            if(cartas[i].oculta == 0){
+                printf("%d%c ", cartas[i].valor, cartas[i].naipe);
+            }else{
+                printf("* ");
+            }
+            
+        }else{
+            if(cartas[i].oculta == 0){
+                printf("%d%c ", cartas[i].valor, cartas[i].naipe);
+            }else{
+                printf("* ");
+            }
+            
+        }
     }
-    printf("\n");
-    
-    //Pilha 3
-    aux = pilhasCarta[2].carta->prox;
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
-    }
-    printf("\n");
-    
-    //Pilha 4
-    aux = pilhasCarta[3].carta->prox;
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
-    }
-    printf("\n");
-    
-    //Pilha 5
-    aux = pilhasCarta[4].carta->prox;
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
-    }
-    printf("\n");
-    
-    //Pilha 6
-    aux = pilhasCarta[5].carta->prox;
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
-    }
-    printf("\n");
-    
-    //Pilha 7
-    aux = pilhasCarta[6].carta->prox;
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
-    }
-    printf("\n");
 }
