@@ -19,7 +19,7 @@
 struct carta{
     int valor;
     char naipe;
-    char visivel; //1 - oculta 0 - visivel
+    char visivel;
     char cor;
     struct carta *ant;
     struct carta *prox;
@@ -42,20 +42,31 @@ typedef struct jogador TPJogador;
 struct historico{
     struct historico *ant;
     struct historico *prox;
-    int pilhaOrigem;
+    int pilhaOrigem; // vai servir para saber em qual pilha estava, caso a jogada seja desfeita
     TPCarta *carta;
 };
 typedef struct historico TPHistorico;
 
 int main(int argc, char** argv) {
     TPCarta cartas[52];
-    TPPilhaCarta PilhasC[7];
-    
+    TPPilhaCarta PilhasC[7], estoqueC, descarteC, montanteC[4];
+    int pOrigem, pDestino, valorC;
     iniciarCartas(&cartas);
     embaralharCartas(&cartas);
     inicializarCabecaPilhas(&PilhasC);
     distribuicaoInicial(&PilhasC, &cartas);
     imprimir(&PilhasC);
+    
+    while(1){
+        printf("\nInforme a pilha de origem: ");
+        scanf("%d", &pOrigem);
+        printf("\nInforme o valor da carta: ");
+        scanf("%d", &valorC);
+        printf("\nInforme a pilha de destino: ");
+        scanf("%d", &pDestino);
+        fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC);
+        imprimir(&PilhasC);
+    }
     return (EXIT_SUCCESS);
 }
 
@@ -104,7 +115,6 @@ void inicializarCabecaPilhas(TPPilhaCarta *pilhasCarta){
 }
 
 void distribuicaoInicial(TPPilhaCarta *pilhasCarta, TPCarta *cartas){
-    //falta fazer o apontamento dos anteriores - apontamentos feitos :) 
     int tam = 51, i, lim = 7, j=0, cont=1;
     TPCarta *aux, *aux2;
     aux = malloc(sizeof(TPCarta));
@@ -132,13 +142,60 @@ void imprimir(TPPilhaCarta *pilhasCarta){
     for(i=0; i<lim; i++){
         aux = pilhasCarta[i].carta->prox;
         while(aux != NULL){
-             if(aux->visivel == 'S'){
+           //  if(aux->visivel == 'S'){
                 printf("%d%c  ", aux->valor, aux->naipe);
-            }else{
-                printf("* ");
-            }
+            //}else{
+              //  printf("* ");
+            //}
             aux = aux->prox;
         }
         printf("\n");
     }
+}
+
+void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilhaCarta *pilhasCartas){
+    pilhaOrigem--;
+    pilhaDestino--;
+    TPCarta *aux, *aux2, *aux3;
+    aux = malloc(sizeof(TPCarta));
+    aux = pilhasCartas[pilhaOrigem].carta->prox;
+    //buscar carta da pilha de origem
+    while(valorCarta != aux->valor){
+        aux = aux->prox;
+        if(valorCarta == aux->valor && aux->visivel == 'S'){
+            break;
+        }
+    }
+    //Buscar carta da pilha de destino
+    aux3 = pilhasCartas[pilhaDestino].carta->prox;
+    while(aux3->prox != NULL){
+        aux3 = aux3->prox;
+    }
+    //verificar quando for 13 para uma pilha vazia
+    if((aux->valor + 1) == aux3->valor && aux->cor != aux3->cor){
+        //organizando a pilha de origem depois de tirar a carta
+        aux2 = aux->ant;
+        aux2->prox = NULL;
+        aux2->visivel = 'S';
+        aux->ant = NULL;
+        //atribuição da carta a pilha de destino
+        aux3->prox = aux;
+        aux->ant = aux3;
+    }else{
+        printf("Movimento inválido!\n");
+    }
+    
+    
+}
+
+void fazerMovimentoPM(){
+    
+}
+
+void fazerMovimentoDP(){
+    
+}
+
+void fazerMovimentoDM(){
+    
 }
