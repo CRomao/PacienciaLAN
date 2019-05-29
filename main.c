@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   main.c
  * Author: Romão
@@ -15,7 +9,7 @@
 #include <stdlib.h>
 #define LIN 19
 #define COL 7
-int validarMovimento(int valorCartaMovida, int valorCartaAcima, char corCartaMovida, char corCartaAcima);
+
 struct carta{
     int valor;
     char naipe;
@@ -49,19 +43,22 @@ struct historico{
     TPCarta * cartaAnterior;
 };
 typedef struct historico TPHistorico;
+int validarMovimento(int valorCartaMovida, int valorCartaAcima, char corCartaMovida, char corCartaAcima);
+int buscarCarta(TPCarta *carta);
 
 int main(int argc, char** argv) {
     TPCarta cartas[52];
-    TPPilhaCarta PilhasC[13], estoqueC, descarteC, montanteC[4];
+    TPPilhaCarta PilhasC[13], descarteC, montanteC[4];
     TPHistorico movimento;
-    printf("MAIN LISTAMOV: %p\n", &movimento);
+//    printf("MAIN LISTAMOV: %p\n", &movimento);
     int pOrigem, pDestino, valorC, contMovimentos = 0, opc;
     iniciarCartas(&cartas);
     embaralharCartas(&cartas);
     inicializarCabecaPilhas(&PilhasC);
     distribuicaoInicial(&PilhasC, &cartas);
-    inicializarCabecaEstoqueDescarte(&estoqueC, &descarteC);
-    distribuicaoInicialEstoque(&estoqueC, &cartas);
+    //estoqueC = &PilhasC[7].carta;
+    
+    distribuicaoInicialEstoque(&PilhasC[7], &cartas);
     inicializarHistorico(&movimento);
     
     PilhasC[0].carta->prox->valor = 11;
@@ -90,14 +87,15 @@ int main(int argc, char** argv) {
     PilhasC[2].carta->prox->prox->prox->cor = 'V';
     PilhasC[2].carta->prox->prox->prox->naipe = 'C';
     
-    
-    imprimirTemp(&PilhasC);
-    imprimir(&PilhasC);
-    
     while(1){
+        imprimirEstoque(&PilhasC[7]);
+        imprimirDescarte(&PilhasC[8]);
+        imprimir(&PilhasC);
+        imprimirMontagem(&PilhasC);
         printf("Escolha a operação: \n");
         printf("1 - Mover\n");
         printf("2 - Desfazer movimento\n");
+        printf("3 - Próxima carta do Estoque\n");
         scanf("%d", &opc);
         switch(opc){
             case 1:
@@ -110,14 +108,14 @@ int main(int argc, char** argv) {
                     case 1:
                         printf("Informe para qual MONTAGEM quer mover: ");
                         scanf("%d", &pDestino);
-                        valorC = buscarCarta();
-                        fazerMovimentoPP(8, valorC, pDestino, &PilhasC, &movimento, &contMovimentos);
+                        valorC = buscarCarta(&PilhasC[8].carta);
+                        fazerMovimentoPP(9, valorC, pDestino, &PilhasC, &movimento, &contMovimentos);
                         break;
                     case 2:
                         printf("Informe para qual PILHA quer mover: ");
                         scanf("%d", &pDestino);
-                        valorC = buscarCarta();
-                        fazerMovimentoPP(8, valorC, pDestino, &PilhasC, &movimento, &contMovimentos);
+                        valorC = buscarCarta(&PilhasC[8].carta);
+                        fazerMovimentoPP(9, valorC, pDestino, &PilhasC, &movimento, &contMovimentos);
                         break;
                     case 3:
                         printf("\nInforme a PILHA que tem a carta: ");
@@ -127,6 +125,7 @@ int main(int argc, char** argv) {
                         printf("\nInforme a MONTAGEM que vai receber a carta: ");
                         scanf("%d", &pDestino);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos);
+                        break;
                     case 4:
                         printf("\nInforme a PILHA que tem a carta: ");
                         scanf("%d", &pOrigem);
@@ -135,29 +134,18 @@ int main(int argc, char** argv) {
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos);
+                        imprimir(&PilhasC);
                 }
-                
-                
-                
-                
-                
-                
-                
-                printf("\nInforme a pilha de origem: ");
-                scanf("%d", &pOrigem);
-                printf("\nInforme o valor da carta: ");
-                scanf("%d", &valorC);
-                printf("\nInforme a pilha de destino: ");
-                scanf("%d", &pDestino);
-                fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos);
-                imprimir(&PilhasC);
                 break;
             case 2:
                 desfazerMovimento(&PilhasC, &movimento, &contMovimentos);
                 imprimir(&PilhasC);
                 break;
+            case 3:
+                fazerMovimentoEstoqueDescarte(&PilhasC[7], &PilhasC[8], &movimento);
+                break;
         }
-        printf("\nCONTMOV: %d\n", contMovimentos);
+        //printf("\nCONTMOV: %d\n", contMovimentos);
         
     }
     return (EXIT_SUCCESS);
@@ -196,10 +184,10 @@ void inicializarCabecaPilhas(TPPilhaCarta *pilhasCarta){
     int i;
     TPCarta *aux;
     aux = malloc(sizeof(TPCarta));
-    for(i=0; i<7; i++){
+    for(i=0; i<13; i++){
         pilhasCarta[i].carta = malloc(sizeof(TPCarta));
         pilhasCarta[i].carta->ant = NULL;
-        pilhasCarta[i].carta->prox = aux;
+        pilhasCarta[i].carta->prox = NULL;
         pilhasCarta[i].carta->cor = 'N';
         pilhasCarta[i].carta->naipe = 'N';
         pilhasCarta[i].carta->visivel = 'N';
@@ -210,11 +198,11 @@ void inicializarCabecaPilhas(TPPilhaCarta *pilhasCarta){
 void distribuicaoInicial(TPPilhaCarta *pilhasCarta, TPCarta *cartas){
     int tam = 51, i, lim = 7, j=0, cont=1;
     TPCarta *aux, *aux2;
-    aux = malloc(sizeof(TPCarta));
-    aux2 = malloc(sizeof(TPCarta));
+    //aux = malloc(sizeof(TPCarta));
+    //aux2 = malloc(sizeof(TPCarta));
     for(i=0; i<lim; i++){
         aux = pilhasCarta[i].carta;
-        while(j < cont){
+        while(j < cont){ // controlar a quantidade de cartas por pilhas
             aux2 = aux;
             aux->prox = &cartas[tam];
             aux = aux->prox;
@@ -229,32 +217,20 @@ void distribuicaoInicial(TPPilhaCarta *pilhasCarta, TPCarta *cartas){
 }
 void distribuicaoInicialEstoque(TPPilhaCarta *estoque, TPCarta *cartas){
     int tam = 24;
-    TPCarta *auxEstoque;
-    auxEstoque = malloc(sizeof(TPCarta));
-    auxEstoque = estoque->carta;
+    TPCarta *auxEstoque, *anterior;
+
     for(int i=0; i<tam; i++){
+        auxEstoque = estoque->carta;
         while(auxEstoque->prox != NULL){
             auxEstoque = auxEstoque->prox;
         }
-        auxEstoque->prox = &cartas[tam];
+        anterior = auxEstoque; // fazer o apontamento dos anteriores
+        auxEstoque->prox = &cartas[i];
+        auxEstoque->prox->ant = anterior;
+        
     }
-    
 }
 
-void inicializarCabecaEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte){
-    estoque->carta->ant = NULL;
-    estoque->carta->cor = 'N';
-    estoque->carta->naipe = 'N';
-    estoque->carta->prox = NULL;
-    estoque->carta->valor = -1;
-    estoque->carta->visivel = 'N';
-    descarte->carta->ant = NULL;
-    descarte->carta->cor = 'N';
-    descarte->carta->naipe = 'N';
-    descarte->carta->prox = NULL;
-    descarte->carta->valor = -1;
-    descarte->carta->visivel = 'N';
-}
 
 void imprimir(TPPilhaCarta *pilhasCarta){
     TPCarta *aux;
@@ -289,6 +265,7 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
         while(aux->prox != NULL){
             aux = aux->prox;
         }
+        aux->visivel = 'S';
     }else{ // pegando de pilha normal
         while(aux->prox != NULL){
             if(valorCarta == aux->valor && aux->visivel == 'S'){
@@ -303,13 +280,14 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
     while(aux3->prox != NULL){
         aux3 = aux3->prox;
     }
+    
     aux2 = aux->ant; // anterior da pilha de origem
     newMovimento->cartaAnterior = aux2;
     validarMov = validarMovimento(aux->valor, aux3->valor, aux->cor, aux3->cor);
     if(validarMov == 0 || validarMov == 1){    
         aux2->prox = NULL;
         aux2->visivel = 'S';
-        aux->ant = NULL;
+        //aux->ant = NULL; - tirar
         //atribuição a nova pilha
         aux3->prox = aux;
         aux->ant = aux3;
@@ -319,9 +297,6 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
         newMovimento->carta = aux;
         newMovimento->prox = NULL;
         newMovimento->ant = NULL;
-        printf("LISTAMOV: %p\n", movimento);
-        printf("*LISTAMOV: %p\n", *movimento);
-        printf("NEWMOV: %p\n", newMovimento);
         registrarMovimento(newMovimento, movimento);
         (*contMovimentos)++;
     }else{
@@ -335,12 +310,11 @@ void desfazerMovimento(TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *
     aux = historico;
     while(aux->prox != NULL){ // Buscar o historico em cima da pilha (o ultimo movimento feito)
         aux = aux->prox;
-    }
-    
-    destino =  pilhasCartas[aux->pilhaDestino].carta;
-    while(destino != aux->carta){ // Vai pegar a carta que tinha sido movinmentada nesse movimento
-        destino = destino->prox;
-    }
+    }    
+    destino =  aux->carta;
+    //while(destino != aux->carta){ // Vai pegar a carta que tinha sido movimentada nesse movimento
+      //  destino = destino->prox;
+   // }
     auxDestino = destino->ant; // a carta que tinha recebido a carta movimentada
     auxDestino->prox = NULL; // o proximo da carta que recebeu, recebe NULO;
     destino->ant = NULL; // o anterior da carta movimentada recebe NULO;
@@ -370,9 +344,7 @@ void fazerMovimentoDM(){
 
 void registrarMovimento(TPHistorico *newMovimento, TPHistorico *movimento){
     TPHistorico *aux, *aux2;
-    aux = malloc(sizeof(TPHistorico));
     aux = movimento;
-    aux2 = malloc(sizeof(TPHistorico)); // anterior
     while(aux->prox != NULL) aux = aux->prox;
     
     aux->prox = newMovimento;
@@ -388,11 +360,13 @@ void inicializarHistorico(TPHistorico *historico){
     historico->cartaAnterior = NULL;
 }
 
-void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte){ // Função para passar a carta para o descarte
+void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte, TPHistorico *movimento){ // Função para passar a carta para o descarte
     if(estoque->carta->prox == NULL){
         reporEstoque(estoque, descarte);// Caso o estoque esteja vazio, chama a função de repor o estoque
     }else{
-        TPCarta *aux, *auxDescarte, *auxEstoque;
+        TPCarta *aux, *auxDescarte, *auxEstoque, *auxMovimento;
+        TPHistorico *newMovimento;
+        newMovimento = malloc(sizeof(TPHistorico));
 
         aux = estoque->carta;
         while(aux->prox != NULL){ // Buscar a carta do estoque (a que está em cima)
@@ -404,19 +378,33 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
             auxDescarte = auxDescarte->prox;
         }
         // Corrigindo o estoque após tirar a carta
+        
         auxEstoque = aux->ant;
+        newMovimento->cartaAnterior = aux->ant;
         auxEstoque->prox = NULL;
         aux->ant = NULL;
         // Ajustando a carta para o descarte
         auxDescarte->prox = aux;
         aux->ant = auxDescarte; 
         auxDescarte->visivel = 'S';
+        
+        newMovimento->pilhaOrigem = 7;
+        newMovimento->pilhaDestino = 8;
+        newMovimento->carta = aux;
+        newMovimento->prox = NULL;
+        newMovimento->ant = NULL;
+        registrarMovimento(newMovimento, movimento);
     }
 }
 
 void reporEstoque(TPPilhaCarta *estoque, TPPilhaCarta *descarte){ //Função para a reposição das cartas para o estoque
     TPCarta *reporEstoque, *estoqueFinal, *aux;
-        int tam = 24;
+    int tam = 0;
+    reporEstoque = descarte->carta;
+    while(reporEstoque->prox != NULL){ // Pegar o o total de cartas que tem do descarte
+        tam++;
+        reporEstoque = reporEstoque->prox;
+    }   
         
         for(int i=0; i<tam; i++){
             reporEstoque = descarte->carta;
@@ -437,7 +425,15 @@ void reporEstoque(TPPilhaCarta *estoque, TPPilhaCarta *descarte){ //Função par
         }
 }
 
-
+int buscarCarta(TPCarta *carta){
+    TPCarta *aux;
+    aux = carta;
+    
+    while(aux->prox != NULL){
+        aux = aux->prox;
+    }
+    return aux->valor;
+}
 
 void regrasJogo(){
     
@@ -498,4 +494,40 @@ int validarMovimento(int valorCartaMovida, int valorCartaAcima, char corCartaMov
         return 2;
     }
     return 3;
+}
+
+
+void imprimirEstoque(TPPilhaCarta *cartasEstoque){
+    TPCarta *aux;
+    aux = cartasEstoque->carta->prox;
+    printf("\nESTOQUE\n");
+    while(aux != NULL){
+        printf("%d%c  ", aux->valor, aux->naipe);
+        aux = aux->prox;
+    }
+    printf("\n");
+}
+
+void imprimirDescarte(TPPilhaCarta *cartasEstoque){
+    TPCarta *aux;
+    aux = cartasEstoque->carta->prox;
+    printf("\nDESCARTE\n");
+    while(aux != NULL){
+        printf("%d%c  ", aux->valor, aux->naipe);
+        aux = aux->prox;
+    }
+    printf("\n");
+}
+
+void imprimirMontagem(TPPilhaCarta *pilhasCartas){
+    TPCarta *aux;
+    for(int i=9; i<13; i++){
+        printf("MONTAGEM: %d", i);
+        aux = pilhasCartas[i].carta;
+        while(aux->prox != NULL){
+            printf("%d%c ", aux->valor, aux->naipe);
+            aux = aux->prox;
+        }
+        printf("\n");
+    }
 }
