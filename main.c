@@ -77,35 +77,7 @@ int main(int argc, char** argv) {
     distribuicaoInicialEstoque(&PilhasC[7], &cartas);
     inicializarHistorico(&movimento);
     
-    PilhasC[0].carta->prox->valor = 11;
-    PilhasC[0].carta->prox->cor = 'P';
-    PilhasC[0].carta->prox->naipe = 'E';
-    PilhasC[4].carta->prox->prox->prox->prox->prox->valor = 12;
-    PilhasC[4].carta->prox->prox->prox->prox->prox->cor = 'V';
-    PilhasC[4].carta->prox->prox->prox->prox->prox->naipe = 'O';
-    
-    PilhasC[4].carta->prox->prox->prox->prox->valor = 4;
-    PilhasC[4].carta->prox->prox->prox->prox->cor = 'P';
-    PilhasC[4].carta->prox->prox->prox->prox->naipe = 'E';
-    
-    PilhasC[3].carta->prox->prox->prox->prox->valor = 13;
-    PilhasC[3].carta->prox->prox->prox->prox->cor = 'P';
-    PilhasC[3].carta->prox->prox->prox->prox->naipe = 'E';
-    
-    PilhasC[6].carta->prox->prox->prox->prox->prox->prox->prox->valor = 3;
-    PilhasC[6].carta->prox->prox->prox->prox->prox->prox->prox->cor = 'P';
-    PilhasC[6].carta->prox->prox->prox->prox->prox->prox->prox->naipe = 'P';
-    PilhasC[6].carta->prox->prox->prox->prox->prox->valor = 3;
-    PilhasC[6].carta->prox->prox->prox->prox->prox->cor = 'V';
-    PilhasC[6].carta->prox->prox->prox->prox->prox->naipe = 'C';
-    
-    PilhasC[2].carta->prox->prox->prox->valor = 4;
-    PilhasC[2].carta->prox->prox->prox->cor = 'V';
-    PilhasC[2].carta->prox->prox->prox->naipe = 'C';
-    
     while(1){
-        //imprimirEstoque(&PilhasC[7]);
-        //imprimirDescarte(&PilhasC[8]);
         imprimirTemp(&PilhasC);
         imprimir(&PilhasC);
         //imprimirMontagem(&PilhasC);
@@ -161,7 +133,6 @@ int main(int argc, char** argv) {
                 fazerMovimentoEstoqueDescarte(&PilhasC[7], &PilhasC[8], &movimento);
                 break;
         }
-        //printf("\nCONTMOV: %d\n", contMovimentos);
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
             break;
@@ -249,11 +220,9 @@ void distribuicaoInicialEstoque(TPPilhaCarta *estoque, TPCarta *cartas){
         }
         anterior = auxEstoque; // fazer o apontamento dos anteriores
         auxEstoque->prox = &cartas[i];
-        auxEstoque->prox->ant = anterior;
-        
+        auxEstoque->prox->ant = anterior;       
     }
 }
-
 
 void imprimir(TPPilhaCarta *pilhasCarta){
     TPCarta *aux;
@@ -265,21 +234,19 @@ void imprimir(TPPilhaCarta *pilhasCarta){
             printf(" | K |\n");
             printf(" |___|\n");
         }else{
-        //  printf("%d - \n",i+1);
           while(aux != NULL){
               printf("  ___ " );
               aux = aux->prox;
           }
           printf("\n");
 
-
           aux = pilhasCarta[i].carta->prox;
           while(aux != NULL){
               if(aux->visivel == 'S'){
                   if(aux->naipe == 'O' || aux->naipe == 'C'){
-                      printf(" |\033[31m %c\033[39m |", aux->naipe);
+                      printf(" |\033[31m %c\033[39m |", aux->simbolo);
                   }else{
-                      printf(" | %c |", aux->naipe);
+                      printf(" | %c |", aux->simbolo);
                   }
               }else{
                   printf(" | * |");
@@ -288,7 +255,6 @@ void imprimir(TPPilhaCarta *pilhasCarta){
               aux = aux->prox;
           }
           printf("\n");
-
 
           aux = pilhasCarta[i].carta->prox;
           while(aux != NULL){
@@ -371,13 +337,10 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
     if(validarMov == 0 || validarMov == 1){    
         aux2->prox = NULL;
         aux2->visivel = 'S';
-        //aux->ant = NULL; - tirar
         //atribuição a nova pilha
         aux3->prox = aux;
         aux->ant = aux3;
         //Pegar dados desse movimento para jogar na função de registrar no histórico
-      //  newMovimento->pilhaOrigem = pilhaOrigem;
-      //  newMovimento->pilhaDestino = pilhaDestino;
         newMovimento->carta = aux;
         newMovimento->prox = NULL;
         newMovimento->ant = NULL;
@@ -386,6 +349,7 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
         (*contMovimentos)++;
     }else{
         printf("\nMovimento inválido\n");
+        Sleep(2000);
     }
 }
 
@@ -435,8 +399,6 @@ void registrarMovimento(TPHistorico *newMovimento, TPHistorico *movimento){
 void inicializarHistorico(TPHistorico *historico){
     historico->ant = NULL;
     historico->carta = NULL;
-  //  historico->pilhaOrigem = -1;
-  //  historico->pilhaDestino = -1;
     historico->prox = NULL;
     historico->cartaAnterior = NULL;
     historico->movEspecial = 'Z';
@@ -452,8 +414,6 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         newMovimentoEspecial->ant = NULL;
         newMovimentoEspecial->carta = NULL;
         newMovimentoEspecial->movEspecial = 'S';
-     //   newMovimentoEspecial->pilhaDestino = -1;
-     //   newMovimentoEspecial->pilhaOrigem = -1;
         newMovimentoEspecial->visivelCartaAnterior = 'N';
         registrarMovimento(newMovimentoEspecial, movimento);
     }else{
@@ -482,8 +442,6 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         aux->ant = auxDescarte; 
         auxDescarte->visivel = 'S';
         
-   //     newMovimento->pilhaOrigem = 7;
-    //    newMovimento->pilhaDestino = 8;
         newMovimento->carta = aux;
         newMovimento->prox = NULL;
         newMovimento->ant = NULL;
@@ -520,13 +478,10 @@ void reporEstoque(TPPilhaCarta *estoque, TPPilhaCarta *descarte){ //Função par
         }
 }
 
-int buscarCarta(TPCarta *carta){
+int buscarCarta(TPCarta *carta){ // função para buscar a ultima carta
     TPCarta *aux;
-    aux = carta;
-    
-    while(aux->prox != NULL){
-        aux = aux->prox;
-    }
+    aux = carta;    
+    while(aux->prox != NULL) aux = aux->prox;
     return aux->valor;
 }
 
@@ -562,13 +517,10 @@ void validarcampo(int campo, char tipo){
 }
 
 
-
-
-
 void imprimirTemp(TPPilhaCarta *pilhasCarta){
     TPCarta *aux;
-    int valorDescarte, valorMontagem10, valorMontagem11, valorMontagem12, valorMontagem13;
-    char naipeEstoque, naipeDescarte, naipeMontagem10, naipeMontagem11, naipeMontagem12, naipeMontagem13;
+    int valor;
+    char naipeEstoque, naipe;
     
     //Imprimir o estoque, o descarte e a montagem
     printf("  ___    ___           ___   ___   ___   ___\n" );
@@ -576,211 +528,66 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta){
     aux = pilhasCarta[7].carta->prox;
     if(aux == NULL){
         naipeEstoque = ' ';
-        
     }else{
         naipeEstoque = '*';
     }
-    
-    //Descarte
-    aux = pilhasCarta[8].carta->prox;
-    if(aux == NULL){
-        naipeDescarte = ' ';
-        valorDescarte = 32;
-    }else{
-        while(aux->prox != NULL){
-            aux = aux->prox;
-        }
-        naipeDescarte = aux->naipe;
-        valorDescarte = aux->valor;
-    }
-    
-    //Montante10
-    aux = pilhasCarta[9].carta->prox;
-    if(aux == NULL){
-        naipeMontagem10 = ' ';
-        valorMontagem10 = 32;
-    }else{
-        while(aux->prox != NULL){
-            aux = aux->prox;
-        }
-        naipeMontagem10 = aux->naipe;
-        valorMontagem10 = aux->valor;
-    }
-    
-    //Montante11
-    aux = pilhasCarta[10].carta->prox;
-    if(aux == NULL){
-        naipeMontagem11 = ' ';
-        valorMontagem11 = 32;
-    }else{
-        while(aux->prox != NULL){
-            aux = aux->prox;
-        }
-        naipeMontagem11 = aux->naipe;
-        valorMontagem11 = aux->valor;
-    }
-    
-    //Montante12
-    aux = pilhasCarta[11].carta->prox;
-    if(aux == NULL){
-        naipeMontagem12 = ' ';
-        valorMontagem12 = 32;
-    }else{
-        while(aux->prox != NULL){
-            aux = aux->prox;
-        }
-        naipeMontagem12 = aux->naipe;
-        valorMontagem12 = aux->valor;
-    }
-    
-    //Montante13
-    aux = pilhasCarta[12].carta->prox;
-    if(aux == NULL){
-        naipeMontagem13 = ' ';
-        valorMontagem13 = 32;
-    }else{
-        while(aux->prox != NULL){
-            aux = aux->prox;
-        }
-        naipeMontagem13 = aux->naipe;
-        valorMontagem13 = aux->valor;
-    }
-    
     printf(" | %c |  ", naipeEstoque);
     
-    //Descarta - naipe
-    if(naipeDescarte == 'O' || naipeDescarte == 'C'){
-        printf("| \033[31m%c\033[39m |", naipeDescarte);           
-    }else{
-        printf("| %c |", naipeDescarte);           
+    //NAIPES CABEÇALHO
+    for(int i=8; i<13; i++){
+        aux = pilhasCarta[i].carta->prox;
+        if(aux == NULL){
+            naipe = ' ';
+            if(i == 9)printf("         ");
+            imprimirNaipeCabecalho(naipe);
+            if(i> 8)printf(" ");
+        }else{
+            while(aux->prox != NULL) aux = aux->prox;
+            if(i == 9)printf("         ");
+            imprimirNaipeCabecalho(aux->naipe);
+            if(i> 8)printf(" ");
+        }
     }
+    printf("\n |_%c_|  ", naipeEstoque);
     
-    printf("         ");
-    //Montagem 10 - naipe
-    if(naipeMontagem10 == 'O' || naipeMontagem10 == 'C'){
-        printf("| \033[31m%c\033[39m | ", naipeMontagem10);           
-    }else{
-        printf("| %c | ", naipeMontagem10);
+    for(int i=8; i<13; i++){
+        aux = pilhasCarta[i].carta->prox;
+        if(aux == NULL){
+            valor = 32;
+            if(i == 9)printf("        ");
+            imprimirValorCabecalho(naipe, valor);
+        }else{
+            while(aux->prox != NULL) aux = aux->prox;
+            if(i == 9)printf("        ");
+            imprimirValorCabecalho(aux->naipe, aux->valor);
+        }
     }
-    
-    // Montagem 11 - naipe
-    if(naipeMontagem11 == 'O' || naipeMontagem11 == 'C'){
-        printf("| \033[31m%c\033[39m | ", naipeMontagem11);
-    }else{
-        printf("| %c | ", naipeMontagem11);
-    }
-    
-    // Montagem 12 - naipe
-    if(naipeMontagem12 == 'O' || naipeMontagem12 == 'C'){
-        printf("| \033[31m%c\033[39m | ", naipeMontagem12);
-    }else{
-        printf("| %c | ", naipeMontagem12);
-    }
-    
-    // Montagem 13 - naipe
-    if(naipeMontagem13 == 'O' || naipeMontagem13 == 'C'){
-        printf("| \033[31m%c\033[39m |\n", naipeMontagem13);
-    }else{
-        printf("| %c |\n", naipeMontagem13);
-    }
+    printf("\n");
+}
 
-    //-=-=-=-=-=--=-=-=-=-=-=-=
-    //-=-=-=Valores das cartas
-    printf(" |_%c_|  ", naipeEstoque);
-    
-    //Descarte - valor
-    if(valorDescarte == 32){
-        printf("|_%c_|", (char)valorDescarte);
+void imprimirNaipeCabecalho(char naipe){
+    if(naipe == 'O' || naipe == 'C'){
+        printf("| \033[31m%c\033[39m |", naipe);           
     }else{
-        if(qtdDigitos(valorDescarte) == 1){
-            if(naipeDescarte == 'O' || naipeDescarte == 'C'){
-                printf("|_\033[31m%d\033[39m_|", valorDescarte);
-            }else{
-                printf("|_%d_|", valorDescarte);
-            }
-        }else{
-            if(naipeDescarte == 'O' || naipeDescarte == 'C'){
-                printf("|_\033[31m%d\033[39m|", valorDescarte);
-            }else{
-                printf("|_%d|", valorDescarte);
-            }
-        }
-    }        
-    
-    printf("         ");
-    
-    //Montagem 10 - valor
-    if(valorMontagem10 == 32){
-        printf("|_%c_| ", (char)valorMontagem10);
-    }else{
-        if(qtdDigitos(valorMontagem10) == 1){
-            if(naipeMontagem10 == 'O' || naipeMontagem10 == 'C'){
-                printf("|_\033[31m%d\033[39m_| ", valorMontagem10);
-            }else{
-                printf("|_%d_| ", valorMontagem10);
-            }
-        }else{
-            if(naipeMontagem10 == 'O' || naipeMontagem10 == 'C'){
-                printf("|_\033[31m%d\033[39m| ", valorMontagem10);
-            }else{
-                printf("|_%d| ", valorMontagem10);
-            }
-        }
+        printf("| %c |", naipe);           
     }
-    
-    //Montagem 11 - valor
-    if(valorMontagem11 == 32){
-        printf("|_%c_| ", (char)valorMontagem11);
+}
+
+void imprimirValorCabecalho(char naipe, int valor){
+    if(valor == 32){
+        printf("|_%c_| ", (char)valor);
     }else{
-        if(qtdDigitos(valorMontagem11) == 1){
-            if(naipeMontagem11 == 'O' || naipeMontagem11 == 'C'){
-                printf("|_\033[31m%d\033[39m_|", valorMontagem11);
+        if(qtdDigitos(valor) == 1){
+            if(naipe == 'O' || naipe == 'C'){
+                printf("|_\033[31m%d\033[39m_| ", valor);
             }else{
-                printf("|_%d_|", valorMontagem11);
+                printf("|_%d_| ", valor);
             }
         }else{
-            if(naipeMontagem11 == 'O' || naipeMontagem11 == 'C'){
-                printf("|_\033[31m%d\033[39m|", valorMontagem11);
+            if(naipe == 'O' || naipe == 'C'){
+                printf("|_\033[31m%d\033[39m| ", valor);
             }else{
-                printf("|_%d|", valorMontagem11);
-            }
-        }
-    }
-    
-    //Montagem 12 - valor
-    if(valorMontagem12 == 32){
-        printf("|_%c_| ", (char)valorMontagem12);
-    }else{
-        if(qtdDigitos(valorMontagem12) == 1){
-            if(naipeMontagem12 == 'O' || naipeMontagem12 == 'C'){
-                printf("|_\033[31m%d\033[39m_|", valorMontagem12);
-            }else{
-                printf("|_%d_|", valorMontagem12);
-            }
-        }else{
-            if(naipeMontagem12 == 'O' || naipeMontagem12 == 'C'){
-                printf("|_\033[31m%d\033[39m|", valorMontagem12);
-            }else{
-                printf("|_%d|", valorMontagem12);
-            }
-        }
-    }
-    
-    //Montagem 13 - valor
-    if(valorMontagem13 == 32){
-        printf("|_%c_|\n", (char)valorMontagem13);
-    }else{
-        if(qtdDigitos(valorMontagem13) == 1){
-            if(naipeMontagem13 == 'O' || naipeMontagem13 == 'C'){
-                printf("|_\033[31m%d\033[39m_|", valorMontagem13);
-            }else{
-                printf("|_%d_|", valorMontagem13);
-            }
-        }else{
-            if(naipeMontagem13 == 'O' || naipeMontagem13 == 'C'){
-                printf("|_\033[31m%d\033[39m|", valorMontagem13);
-            }else{
-                printf("|_%d|", valorMontagem13);
+                printf("|_%d| ", valor);
             }
         }
     }
@@ -805,41 +612,6 @@ int validarMovimento(int valorCartaMovida, int valorCartaAcima, char corCartaMov
         }
     }
     return 3;
-}
-
-void imprimirEstoque(TPPilhaCarta *cartasEstoque){
-    TPCarta *aux;
-    aux = cartasEstoque->carta->prox;
-    printf("\nESTOQUE\n");
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
-    }
-    printf("\n");
-}
-
-void imprimirDescarte(TPPilhaCarta *cartasEstoque){
-    TPCarta *aux;
-    aux = cartasEstoque->carta->prox;
-    printf("\nDESCARTE\n");
-    while(aux != NULL){
-        printf("%d%c  ", aux->valor, aux->naipe);
-        aux = aux->prox;
-    }
-    printf("\n");
-}
-
-void imprimirMontagem(TPPilhaCarta *pilhasCartas){
-    TPCarta *aux;
-    for(int i=9; i<13; i++){
-        printf("MONTAGEM %d: ", i+1);
-        aux = pilhasCartas[i].carta->prox;
-        while(aux != NULL){
-            printf("%d%c ", aux->valor, aux->naipe);
-            aux = aux->prox;
-        }
-        printf("\n");
-    }
 }
 
 int condicaoVitoria(TPPilhaCarta *pilhasCartas){
