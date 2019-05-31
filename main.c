@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <locale.h>
 #define LIN 19
-#define COL 7
+#define COL 7 // teste de pull
 
 struct carta{
     int valor;
@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
     
     while(1){
         imprimirTemp(&PilhasC);
+        printf("\n");
         imprimir(&PilhasC);
         //imprimirMontagem(&PilhasC);
         printf("Escolha a operação: \n");
@@ -549,7 +550,7 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta){
         }
     }
     printf("\n |_%c_|  ", naipeEstoque);
-    
+    //VALORES - CABEÇALHO
     for(int i=8; i<13; i++){
         aux = pilhasCarta[i].carta->prox;
         if(aux == NULL){
