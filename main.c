@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <locale.h>
 #define LIN 19
-#define COL 7 // teste de pull
+#define COL 7 // teste de pull      
 
 struct carta{
     int valor;
