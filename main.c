@@ -1,15 +1,11 @@
-/* 
- * File:   main.c
+/* File:   main.c
  * Author: Romão
  *
  * Created on 25 de Maio de 2019, 19:36
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
-#define LIN 19
-#define COL 7
 
 struct carta{
     int valor;
@@ -31,7 +27,7 @@ struct jogador{
     char nome[100];
     int tempo;
     int pont;
-    int mov;
+    int qtdMov;
 };
 typedef struct jogador TPJogador;
 
@@ -56,41 +52,57 @@ void distribuicaoInicial(TPPilhaCarta *pilhasCarta, TPCarta *cartas);
 void distribuicaoInicialEstoque(TPPilhaCarta *estoque, TPCarta *cartas);
 void desfazerMovimento(TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *contMovimentos);
 void registrarMovimento(TPHistorico *newMovimento, TPHistorico *movimento);
-void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte, TPHistorico *movimento);
+void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte, TPHistorico *movimento, int *contMovimentos);
 void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilhaCarta *pilhasCartas, TPHistorico *movimento, int *contMovimentos, int opc);
 void reporEstoque(TPPilhaCarta *estoque, TPPilhaCarta *descarte);
 void validarcampo(int campo, char tipo);
-void imprimirTemp(TPPilhaCarta *pilhasCarta);
+void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos);
 int qtdDigitos(int valor);
 int condicaoVitoria(TPPilhaCarta *pilhasCartas);
 int main(int argc, char** argv) {
     TPCarta cartas[52];
     TPPilhaCarta PilhasC[13];
     TPHistorico movimento;
-    int pOrigem, pDestino, valorC, contMovimentos = 0, opc;
+    int pOrigem, pDestino, valorC, contMovimentos = 0, opc, menu;
+    char loop = 'N';
     iniciarCartas(&cartas);
     embaralharCartas(&cartas);
     inicializarCabecaPilhas(&PilhasC);
     distribuicaoInicial(&PilhasC, &cartas);
     distribuicaoInicialEstoque(&PilhasC[7], &cartas);
     inicializarHistorico(&movimento);
-
-    while(1){
-        imprimirTemp(&PilhasC);
+    
+    while(loop == 'N'){
+        menu = menuPrincipal();
+        if(menu == 1){
+            loop = 'S';
+        }else if( menu == 2){
+            regrasJogo();
+        }else if( menu == 3){
+            //rank
+        }else if(menu == 4){
+            break;
+        }
+    }
+    
+    
+    while(loop == 'S'){
+        imprimirTemp(&PilhasC, &contMovimentos);
         printf("\n\n");
         imprimir(&PilhasC);
         printf("\n");// Adicionei esse \n
         printf("Escolha a operação: \n");
         printf("1 - Mover | ");
         printf("2 - Desfazer movimento | ");
-        printf("3 - Próxima carta do Estoque |\n--> ");
+        printf("3 - Próxima carta do Estoque | 4 - Outras Funções\n--> ");
         scanf("%d", &opc);
         switch(opc){
             case 1:
                 printf("1 - Mover de DESCARTE para MONTAGEM | ");
                 printf("2 - Mover de DESCARTE para PILHA | ");
                 printf("3 - Mover de PILHA para MONTAGEM | ");
-                printf("4 - Mover de PILHA para PILHA |\n-->");
+                printf("4 - Mover de PILHA para PILHA | ");
+                printf("5 - Mover de MONTAGEM para PILHA\n-->");
                 scanf("%d", &opc);
                 switch(opc){
                     case 1:
@@ -108,8 +120,7 @@ int main(int argc, char** argv) {
                     case 3:
                         printf("\nInforme a PILHA que tem a carta: ");
                         scanf("%d", &pOrigem);
-                        printf("\nInforme o VALOR da carta: ");
-                        scanf("%d", &valorC);
+                        valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         printf("\nInforme a MONTAGEM que vai receber a carta: ");
                         scanf("%d", &pDestino);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 2);
@@ -123,14 +134,24 @@ int main(int argc, char** argv) {
                         scanf("%d", &pDestino);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
                         imprimir(&PilhasC);
+                        break;
+                    case 5:
+                        printf("\nInforme a MONTAGEM que tem a carta: ");
+                        scanf("%d", &pOrigem);
+                        valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
+                        printf("\nInforme a PILHA que vai receber a carta: ");
+                        scanf("%d", &pDestino);
+                        fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
                 }
                 break;
             case 2:
                 desfazerMovimento(&PilhasC, &movimento, &contMovimentos);
                 break;
             case 3:
-                fazerMovimentoEstoqueDescarte(&PilhasC[7], &PilhasC[8], &movimento);
+                fazerMovimentoEstoqueDescarte(&PilhasC[7], &PilhasC[8], &movimento, &contMovimentos);
                 break;
+            case 4:
+                printf("1 - Novo Jogo | 2 - Sair");
         }
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
@@ -367,6 +388,7 @@ void desfazerMovimento(TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *
             anteriorAux = aux->ant;
             anteriorAux->prox = NULL;
             free(aux);
+            (*contMovimentos)--;
         }else{
             destino =  aux->carta;
 
@@ -381,7 +403,7 @@ void desfazerMovimento(TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *
             anteriorAux = aux->ant;
             anteriorAux->prox = NULL;
             free(aux);
-            (*contMovimentos)++;
+            (*contMovimentos)--;
         }
     }
 }
@@ -403,7 +425,7 @@ void inicializarHistorico(TPHistorico *historico){
     historico->movEspecial = 'Z';
 }
 
-void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte, TPHistorico *movimento){ // Função para passar a carta para o descarte
+void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte, TPHistorico *movimento, int *contMovimentos){ // Função para passar a carta para o descarte
     if(estoque->carta->prox == NULL){
         reporEstoque(estoque, descarte);// Caso o estoque esteja vazio, chama a função de repor o estoque
         TPHistorico *newMovimentoEspecial; // e guarda esse movimento como especial
@@ -415,6 +437,7 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         newMovimentoEspecial->movEspecial = 'S';
         newMovimentoEspecial->visivelCartaAnterior = 'N';
         registrarMovimento(newMovimentoEspecial, movimento);
+        (*contMovimentos)++;
     }else{
         TPCarta *aux, *auxDescarte, *auxEstoque, *auxMovimento;
         TPHistorico *newMovimento;
@@ -445,6 +468,7 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         newMovimento->ant = NULL;
         newMovimento->movEspecial = 'N';
         registrarMovimento(newMovimento, movimento);
+        (*contMovimentos)++;
     }
 }
 
@@ -488,14 +512,13 @@ int buscarCarta(TPCarta *carta){
 
 void regrasJogo(){
     
+    
+    printf("Pressione qualquer tecla para voltar para o menu...");
+    system("pause");
+
 }
 
 void sairJogo(){
-    
-}
-
-
-void rankJogo(){
     
 }
 
@@ -521,10 +544,11 @@ void validarcampo(int campo, char tipo){
 
 
 
-void imprimirTemp(TPPilhaCarta *pilhasCarta){
+void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos){
     TPCarta *aux;
     int valor;
     char naipeEstoque, naipe;
+    printf("                        1     2     3     4\n");
     //Imprimir o estoque, o descarte e a montagem
     printf("  ___    ___           ___   ___   ___   ___\n" );
     //Estoque
@@ -549,7 +573,8 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta){
                 imprimirNaipeCabecalho(aux->naipe);
         }
     }
-    
+    //Imprimir pontos e movimentos
+    printf("          PONTOS: %d", condicaoVitoria(pilhasCarta));
     printf("\n |_%c_|  ", naipeEstoque);
     
     //VALORES CABEÇALHO
@@ -566,6 +591,7 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta){
             imprimirValorCabecalho(aux->naipe, aux->valor);
       }
     }
+    printf("          MOVIMENTOS: %d", *contMovimentos);
 }
 
 void imprimirNaipeCabecalho(char naipe){
@@ -621,15 +647,67 @@ int condicaoVitoria(TPPilhaCarta *pilhasCartas){
     TPCarta *aux;
     int i, cont = 0;
     for(i=9; i<13; i++){
-        aux = pilhasCartas[i].carta;
+        aux = pilhasCartas[i].carta->prox;
         while(aux != NULL){
             aux = aux->prox;
             cont++;
         }
     }   
-    if(cont == 52){
-        return 0;
-    }else{
-        return 1;
+    return cont;
+}
+
+
+void simularDoisPassos(TPPilhaCarta * pilhasCartas){
+    int cont = 0, i,j;
+    TPCarta *aux;
+    for(i=0; i<7; i++){
+        aux = pilhasCartas[i].carta;
+        while(aux != NULL){
+            aux = aux->prox;
+            if(aux->visivel == 'S')cont++;
+        }
+        
+        for(j=0; j<cont; j++){
+            
+        }
     }
+}
+
+void novoJogo(TPCarta *cartas, TPPilhaCarta *pilhasCartas){
+    for(int i=0; i<52; i++){
+        cartas[i].ant = NULL;
+        cartas[i].prox = NULL;
+    }
+    for(int i=0; i<13; i++)pilhasCartas[i].carta->prox = NULL;
+    embaralharCartas(cartas);
+    distribuicaoInicial(pilhasCartas, cartas);
+    //distribuicaoInicialEstoque(pilhasCartas[7], cartas);
+}
+
+int menuPrincipal(){
+    int opc;
+    printf("\t\t\t-=-=-=-=-=PACIENCIALAN-=-=-=-=-=\n");
+    printf("\t\t\t           versão 1.0\n\n\n");
+    printf("1 - Novo Jogo | 2 - Regras | 3 - Rank 10 | 4 - Sair\n-->");
+    scanf("%d", &opc);
+    switch(opc){
+        case 1:
+            return 1;
+        case 2:
+            return 2;
+        case 3:
+            return 3;
+        case 4:
+            return 4;
+    }
+}
+
+void rank(){
+    //salvar no arquivo assim:
+    //nome jogador
+    //pontuação
+    //qtd movimentos
+    //para poder carregar esse arquivo, teria que fazer um for com a qtd de linhas do arquivo
+    // dividido por 3, aí teriamos o total de jogadores que tem no arquivo.
+    //pegar uma string nome, int pontos, ont qtdMovimentos, e atribuir ao jogador
 }
