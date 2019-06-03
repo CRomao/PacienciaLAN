@@ -59,6 +59,7 @@ void validarcampo(int campo, char tipo);
 void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos);
 int qtdDigitos(int valor);
 int condicaoVitoria(TPPilhaCarta *pilhasCartas);
+int verificarMontagem(int montagem);
 int main(int argc, char** argv) {
     TPCarta cartas[52];
     TPPilhaCarta PilhasC[13];
@@ -109,6 +110,7 @@ int main(int argc, char** argv) {
                         printf("Informe para qual MONTAGEM quer mover: ");
                         scanf("%d", &pDestino);
                         valorC = buscarCarta(&PilhasC[8].carta);
+                        pDestino = verificarMontagem(pDestino);
                         fazerMovimentoPP(9, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 2);
                         break;
                     case 2:
@@ -123,6 +125,7 @@ int main(int argc, char** argv) {
                         valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         printf("\nInforme a MONTAGEM que vai receber a carta: ");
                         scanf("%d", &pDestino);
+                        pDestino = verificarMontagem(pDestino);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 2);
                         break;
                     case 4:
@@ -141,6 +144,7 @@ int main(int argc, char** argv) {
                         valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
+                        pOrigem = verificarMontagem(pOrigem);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
                 }
                 break;
@@ -250,54 +254,55 @@ void imprimir(TPPilhaCarta *pilhasCarta){
     for(i=0; i<lim; i++){
         aux = pilhasCarta[i].carta->prox;
         if(aux == NULL){
-            printf("  ___\n" );
-            printf(" | K |\n");
-            printf(" |___|\n");
+            printf("   ___\n" );
+            printf("  | K |\n");
+            printf("%d |___|\n", i+1);
         }else{
           while(aux != NULL){
-              printf("  ___ " );
+              printf("   ___ " );
               aux = aux->prox;
           }
           printf("\n");
-
+          //imprimir os naipes das cartas das pilhas
           aux = pilhasCarta[i].carta->prox;
           while(aux != NULL){
               if(aux->visivel == 'S'){
                   if(aux->naipe == 'O' || aux->naipe == 'C'){
-                      printf(" |\033[31m %c\033[39m |", aux->naipe);
+                      printf("  |\033[31m %c\033[39m |", aux->naipe);
                   }else{
-                      printf(" | %c |", aux->naipe);
+                      printf("  | %c |", aux->naipe);
                   }
               }else{
-                  printf(" | * |");
+                  printf("  | * |");
               }
 
               aux = aux->prox;
           }
           printf("\n");
 
-
+          printf("%d", (i+1));
+          //imprimir os valores da pilhas
           aux = pilhasCarta[i].carta->prox;
           while(aux != NULL){
               if(qtdDigitos(aux->valor) == 1){
                   if(aux->visivel == 'S'){
                       if(aux->naipe == 'O' || aux->naipe == 'C'){
-                        printf(" |_\033[31m%d\033[39m_|", (char)aux->valor);
+                        printf(" |_\033[31m%d\033[39m_| ", (char)aux->valor);
                       }else{
-                        printf(" |_%d_|", aux->valor);  
+                        printf(" |_%d_| ", aux->valor);  
                       }
                   }else{
-                      printf(" |_*_|");
+                      printf(" |_*_| ");
                   }
               }else{
                   if(aux->visivel == 'S'){
                       if(aux->naipe == 'O' || aux->naipe == 'C'){
-                            printf(" |_\033[31m%d\033[39m|", (char)aux->valor);
+                            printf(" |_\033[31m%d\033[39m| ", (char)aux->valor);
                       }else{
-                            printf(" |_%d|", aux->valor);
+                            printf(" |_%d| ", aux->valor);
                       }
                   }else{
-                      printf(" |_*_|");
+                      printf(" |_*_| ");
                   }
               }
               aux = aux->prox;
@@ -328,7 +333,7 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
     TPHistorico *newMovimento;
     int validarMov;
     newMovimento = malloc(sizeof(TPHistorico));
-    aux = malloc(sizeof(TPCarta));
+    //aux = malloc(sizeof(TPCarta));
     aux = pilhasCartas[pilhaOrigem].carta;
     //buscar carta da pilha de origem
     if(pilhaOrigem > 6){ // pegando de montagem ou descarte
@@ -710,4 +715,17 @@ void rank(){
     //para poder carregar esse arquivo, teria que fazer um for com a qtd de linhas do arquivo
     // dividido por 3, aí teriamos o total de jogadores que tem no arquivo.
     //pegar uma string nome, int pontos, ont qtdMovimentos, e atribuir ao jogador
+}
+
+
+int verificarMontagem(int montagem){
+    if(montagem == 1){
+        return 10;
+    }else if(montagem == 2){
+        return 11;
+    }else if(montagem == 3){
+        return 12;
+    }else if(montagem == 4){
+        return 13;
+    }
 }
