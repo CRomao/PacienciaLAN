@@ -24,10 +24,12 @@ struct pilhaCarta{
 typedef struct  pilhaCarta TPPilhaCarta;
 
 struct jogador{
-    char nome[100];
-    int tempo;
-    int pont;
-    int qtdMov;
+    char nome[14];
+    //int tempo;
+    char pont[5];
+    char qtdMov[5];
+    struct jogador *prox;
+    struct jogador *ant;
 };
 typedef struct jogador TPJogador;
 
@@ -38,6 +40,8 @@ struct historico{
     char movEspecial;
     TPCarta *carta;
     TPCarta * cartaAnterior;
+    int pilhaOrigem;
+    int pilhaDestino;
 };
 typedef struct historico TPHistorico;
 
@@ -60,11 +64,17 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos);
 int qtdDigitos(int valor);
 int condicaoVitoria(TPPilhaCarta *pilhasCartas);
 int verificarMontagem(int montagem);
-int main(int argc, char** argv) {
+int main(int argc, char** argv){
+    FILE *rank;
+    rank = fopen("rank.txt", "r+"); // vai tentar abrir o arquivo do rank.
+    if(rank == NULL)rank = fopen("rank.txt", "w+"); // se não existir, ele cria o arquivo.
     TPCarta cartas[52];
     TPPilhaCarta PilhasC[13];
     TPHistorico movimento;
-    int pOrigem, pDestino, valorC, contMovimentos = 0, opc, menu;
+    TPJogador jogador;
+    jogador.ant = NULL;
+    jogador.prox = NULL;
+    int pOrigem, pDestino, valorC, contMovimentos = 0, opc, menu,voltarJogada, histJogada;
     char loop = 'N';
     iniciarCartas(&cartas);
     embaralharCartas(&cartas);
@@ -73,6 +83,10 @@ int main(int argc, char** argv) {
     distribuicaoInicialEstoque(&PilhasC[7], &cartas);
     inicializarHistorico(&movimento);
     
+    
+    //contarJogadoresArquivo(rank, &jogador);
+   // imprimirJogadores(&jogador);
+            
     while(loop == 'N'){
         menu = menuPrincipal();
         if(menu == 1){
@@ -81,6 +95,7 @@ int main(int argc, char** argv) {
             regrasJogo();
         }else if( menu == 3){
             //rank
+      imprimirJogadores(&jogador);
         }else if(menu == 4){
             break;
         }
@@ -89,13 +104,13 @@ int main(int argc, char** argv) {
     
     while(loop == 'S'){
         imprimirTemp(&PilhasC, &contMovimentos);
-        printf("\n\n");
+        printf("\n");
         imprimir(&PilhasC);
-        printf("\n");// Adicionei esse \n
+        printf("\n");
         printf("Escolha a operação: \n");
         printf("1 - Mover | ");
         printf("2 - Desfazer movimento | ");
-        printf("3 - Próxima carta do Estoque | 4 - Outras Funções\n--> ");
+        printf("3 - Próxima carta do Estoque | 4 - Histórico de Jogadas\n--> ");
         scanf("%d", &opc);
         switch(opc){
             case 1:
@@ -140,7 +155,7 @@ int main(int argc, char** argv) {
                         break;
                     case 5:
                         printf("\nInforme a MONTAGEM que tem a carta: ");
-                        scanf("%d", &pOrigem);
+                        scanf("3%d", &pOrigem);
                         valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
@@ -155,7 +170,26 @@ int main(int argc, char** argv) {
                 fazerMovimentoEstoqueDescarte(&PilhasC[7], &PilhasC[8], &movimento, &contMovimentos);
                 break;
             case 4:
-                printf("1 - Novo Jogo | 2 - Sair");
+                histJogada =imprimirHistoricoJogadas(&movimento);
+                if(histJogada == 0){
+                    printf("Histórico vazio.\n");
+                }else{
+                    printf("Deseja voltar para uma jogada específica?\n1-SIM\n2-NÃO\n--> ");
+                    scanf("%d", &voltarJogada);
+                    switch(voltarJogada){
+                        case 1:
+                            printf("Para qual jogada deseja voltar?(Informe o número da jogada no canto esquerdo)\n");
+                            scanf("%d", &voltarJogada);
+                            histJogada = (histJogada - voltarJogada);
+                            for(int i=0; i<histJogada; i++)desfazerMovimento(&PilhasC, &movimento, &contMovimentos);
+                            break;
+                        case 2:
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                }
         }
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
@@ -163,7 +197,7 @@ int main(int argc, char** argv) {
         }else{
             system("cls");
         }   
-    }    
+    }
     return (EXIT_SUCCESS);
 }
 
@@ -333,7 +367,6 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
     TPHistorico *newMovimento;
     int validarMov;
     newMovimento = malloc(sizeof(TPHistorico));
-    //aux = malloc(sizeof(TPCarta));
     aux = pilhasCartas[pilhaOrigem].carta;
     //buscar carta da pilha de origem
     if(pilhaOrigem > 6){ // pegando de montagem ou descarte
@@ -371,6 +404,8 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
         newMovimento->prox = NULL;
         newMovimento->ant = NULL;
         newMovimento->movEspecial = 'N';
+        newMovimento->pilhaOrigem = pilhaOrigem;
+        newMovimento->pilhaDestino = pilhaDestino;
         registrarMovimento(newMovimento, movimento);
         (*contMovimentos)++;
     }else{
@@ -441,6 +476,8 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         newMovimentoEspecial->carta = NULL;
         newMovimentoEspecial->movEspecial = 'S';
         newMovimentoEspecial->visivelCartaAnterior = 'N';
+        newMovimentoEspecial->pilhaOrigem = 8;
+        newMovimentoEspecial->pilhaDestino = 7;
         registrarMovimento(newMovimentoEspecial, movimento);
         (*contMovimentos)++;
     }else{
@@ -472,6 +509,8 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         newMovimento->prox = NULL;
         newMovimento->ant = NULL;
         newMovimento->movEspecial = 'N';
+        newMovimento->pilhaOrigem = 7;
+        newMovimento->pilhaDestino = 8;
         registrarMovimento(newMovimento, movimento);
         (*contMovimentos)++;
     }
@@ -508,10 +547,7 @@ void reporEstoque(TPPilhaCarta *estoque, TPPilhaCarta *descarte){ //Função par
 int buscarCarta(TPCarta *carta){
     TPCarta *aux;
     aux = carta;
-    
-    while(aux->prox != NULL){
-        aux = aux->prox;
-    }
+    while(aux->prox != NULL)aux = aux->prox;
     return aux->valor;
 }
 
@@ -545,15 +581,10 @@ void validarcampo(int campo, char tipo){
     }
 }
 
-
-
-
-
 void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos){
     TPCarta *aux;
     int valor;
     char naipeEstoque, naipe;
-    printf("                        1     2     3     4\n");
     //Imprimir o estoque, o descarte e a montagem
     printf("  ___    ___           ___   ___   ___   ___\n" );
     //Estoque
@@ -578,7 +609,7 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos){
                 imprimirNaipeCabecalho(aux->naipe);
         }
     }
-    //Imprimir pontos e movimentos
+    //Imprimir pontos
     printf("          PONTOS: %d", condicaoVitoria(pilhasCarta));
     printf("\n |_%c_|  ", naipeEstoque);
     
@@ -596,7 +627,8 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos){
             imprimirValorCabecalho(aux->naipe, aux->valor);
       }
     }
-    printf("          MOVIMENTOS: %d", *contMovimentos);
+    printf("          MOVIMENTOS: %d\n", *contMovimentos);
+    printf("                        1     2     3     4");
 }
 
 void imprimirNaipeCabecalho(char naipe){
@@ -707,16 +739,51 @@ int menuPrincipal(){
     }
 }
 
-void rank(){
-    //salvar no arquivo assim:
-    //nome jogador
-    //pontuação
-    //qtd movimentos
-    //para poder carregar esse arquivo, teria que fazer um for com a qtd de linhas do arquivo
-    // dividido por 3, aí teriamos o total de jogadores que tem no arquivo.
-    //pegar uma string nome, int pontos, ont qtdMovimentos, e atribuir ao jogador
+void iniciarJogador(TPJogador *jogador){
+    jogador->ant = NULL;
+    jogador->prox = NULL;
 }
 
+void contarJogadoresArquivo(FILE *rank, TPJogador *jogadores){
+        int linhas = 0, tam;
+        char auxS[14];
+        TPJogador *novoJogador, *aux;
+        aux = jogadores;
+        novoJogador = malloc(sizeof(TPJogador));
+        iniciarJogador(novoJogador);
+         while(!feof(rank)){
+                if(linhas == 3)linhas = 0;
+                fgets(auxS, 14, rank);
+                tam = strlen(auxS);
+                if(linhas == 0){
+                    for(int i=0; auxS[i]!='\r'; i++)novoJogador->nome[i] = auxS[i]; // pegar os nomes
+                    linhas++;
+                }else if(linhas == 1){
+                    for(int i=0; auxS[i]!='\r'; i++)novoJogador->pont[i] = auxS[i]; // pegr os pontos
+                    linhas++;
+                }else if(linhas == 2){
+                    for(int i=0; auxS[i]!='\n'; i++)novoJogador->qtdMov[i] = auxS[i]; // pegar a qtd de movimentos de cada jogador
+                    linhas++;
+                    aux->prox = novoJogador;
+                    novoJogador->ant = aux;
+                    aux = aux->prox;
+                    novoJogador = malloc(sizeof(TPJogador));
+                    iniciarJogador(novoJogador);
+                }
+        } 
+}
+
+void imprimirJogadores(TPJogador *jogador){
+    int cont=0;
+    TPJogador *aux;
+    aux = jogador->prox;
+    printf("   JOGADOR\t\tPONTOS\t\tQTD. MOVIMENTOS\n");
+    while(aux != NULL){
+        printf("%dº %s\t\t%s\t\t%s\n",(cont+1), aux->nome, aux->pont, aux->qtdMov);
+        cont++;
+        aux = aux->prox;
+    }
+}
 
 int verificarMontagem(int montagem){
     if(montagem == 1){
@@ -728,4 +795,17 @@ int verificarMontagem(int montagem){
     }else if(montagem == 4){
         return 13;
     }
+}
+
+int imprimirHistoricoJogadas(TPHistorico *historico){
+    TPHistorico *aux;
+    int totalRegistros=0;
+    aux = historico->prox;
+    printf("   P.Origem\tNaipe/Valor   P.Destino\n");
+    while(aux != NULL){
+        totalRegistros++;
+        printf("%dº\t%d\t    %c/%d      \t%d\n",totalRegistros,(aux->pilhaOrigem+1), aux->carta->naipe, aux->carta->valor, (aux->pilhaDestino+1));
+        aux = aux->prox;
+    }
+    return totalRegistros;
 }
