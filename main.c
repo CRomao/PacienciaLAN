@@ -155,7 +155,7 @@ int main(int argc, char** argv){
                         break;
                     case 5:
                         printf("\nInforme a MONTAGEM que tem a carta: ");
-                        scanf("3%d", &pOrigem);
+                        scanf("%d", &pOrigem);
                         valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
@@ -801,11 +801,40 @@ int imprimirHistoricoJogadas(TPHistorico *historico){
     TPHistorico *aux;
     int totalRegistros=0;
     aux = historico->prox;
-    printf("   P.Origem\tNaipe/Valor   P.Destino\n");
+    printf("   P.Origem\tNaipe/Valor     P.Destino\n");
+    printf("-------------------------------------------\n");
     while(aux != NULL){
-        totalRegistros++;
-        printf("%dº\t%d\t    %c/%d      \t%d\n",totalRegistros,(aux->pilhaOrigem+1), aux->carta->naipe, aux->carta->valor, (aux->pilhaDestino+1));
+        totalRegistros++;// colocar para imprimir o nome referente as pilhas
+        printf("%dº  ",totalRegistros);
+        verificarHistoricoJogadas(aux->pilhaOrigem);
+        printf("\t    ");
+        verificarNaipeValorHistoricoJogada(aux->carta->naipe, aux->carta->valor);
+        printf("      \t");
+        verificarHistoricoJogadas(aux->pilhaDestino);
+        printf("\n");                
         aux = aux->prox;
     }
+    printf("-------------------------------------------\n");
+    printf("\n");
     return totalRegistros;
+}
+
+void verificarHistoricoJogadas(int valor){
+    if(valor < 7){
+        printf("PILHA");
+    }else if(valor == 7){
+        printf("ESTOQUE");
+    }else if(valor == 8){
+        printf("DESCARTE");
+    }else if(valor > 8){
+        printf("MONTAGEM");
+    }
+}
+
+void verificarNaipeValorHistoricoJogada(char naipe, int valor){
+    if(naipe == 'O' || naipe == 'C'){
+       printf("\033[31m%c/%d\033[39m", naipe, valor);   
+    }else{
+       printf("%c/%d", naipe, valor);    
+    }
 }
