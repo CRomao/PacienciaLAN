@@ -84,21 +84,18 @@ int main(int argc, char** argv){
     distribuicaoInicial(&PilhasC, &cartas);
     distribuicaoInicialEstoque(&PilhasC[7], &cartas);
     inicializarHistorico(&movimento);
-    
-    
     contarJogadoresArquivo(rank, &jogador);
-    //imprimirJogadores(&jogador);
     ordenarJogadores(&jogador);
-    imprimirJogadores(&jogador);
-    /*while(loop == 'N'){
+    
+
+    while(loop == 'N'){
         menu = menuPrincipal();
         if(menu == 1){
             loop = 'S';
         }else if( menu == 2){
             regrasJogo();
         }else if( menu == 3){
-            //rank
-      imprimirJogadores(&jogador);
+            imprimirJogadores(&jogador);
         }else if(menu == 4){
             break;
         }
@@ -200,7 +197,7 @@ int main(int argc, char** argv){
         }else{
             system("cls");
         }   
-    }*/
+    }
     return (EXIT_SUCCESS);
 }
 
@@ -728,7 +725,7 @@ int menuPrincipal(){
     int opc;
     printf("\t\t\t-=-=-=-=-=PACIENCIALAN-=-=-=-=-=\n");
     printf("\t\t\t           versão 1.0\n\n\n");
-    printf("1 - Novo Jogo | 2 - Regras | 3 - Rank 10 | 4 - Sair\n-->");
+    printf("1 - Novo Jogo | 2 - Regras | 3 - Rank | 4 - Sair\n-->");
     scanf("%d", &opc);
     switch(opc){
         case 1:
@@ -742,51 +739,30 @@ int menuPrincipal(){
     }
 }
 
-void iniciarJogador(TPJogador *jogador){
-    jogador->ant = NULL;
-    jogador->prox = NULL;
-}
-
 void contarJogadoresArquivo(FILE *rank, TPJogador *jogadores){
-        int linhas = 0, tam;
-        char auxS[14];
+        int linhas = 0;
         TPJogador *novoJogador, *aux;
         aux = jogadores;
         novoJogador = malloc(sizeof(TPJogador));
-        //iniciarJogador(novoJogador);
          while(!feof(rank)){
                 if(linhas == 3)linhas = 0;
-                fgets(auxS, 14, rank);
-                tam = strlen(auxS);
                 if(linhas == 0){
-                    for(int i=0; auxS[i]!='\r'; i++)novoJogador->nome[i] = auxS[i]; // pegar os nomes
+                    fscanf(rank, "%s", &(novoJogador->nome));// pegar os nomes
                     linhas++;
                 }else if(linhas == 1){
-                    novoJogador->pont = converterParaInteiro(auxS, (tam-2)); // pegar os pontos
+                    fscanf(rank, "%d", &(novoJogador->pont)); // pegar os pontos
                     linhas++;
                 }else if(linhas == 2){
-                    novoJogador->qtdMov = converterParaInteiro(auxS, (tam-2)); // pegar a qtd de movimentos
+                    fscanf(rank, "%d", &(novoJogador->qtdMov)); // pegar a qtd de movimentos
                     linhas++;
                     novoJogador->prox = NULL;
                     aux->prox = novoJogador;
                     novoJogador->ant = aux;
                     aux = aux->prox;
-                    
                     novoJogador = malloc(sizeof(TPJogador));
                 }
-        } 
-}
-
-int converterParaInteiro(char *auxS, int tam){ // função para retornar inteiro a pontuação e os movimentos
-    int aux, soma=0;
-    if(tam == 3)aux = 100; // caso o tamanho seja 3
-    if(tam == 2)aux = 10;// caso o tamanho seja 2
-    if(tam == 1)aux = 1;// caso o tamanho seja 1
-    for(int i=0; i<tam; i++){
-        soma += ((auxS[i] - 48 ) * aux);
-        aux = aux/10;
-    }
-    return soma;
+        }
+        free(novoJogador);
 }
 
 void ordenarJogadores(TPJogador *jogador){
@@ -824,7 +800,7 @@ void ordenarJogadores(TPJogador *jogador){
             aux3 = aux2->ant;
             aux4 = aux2->prox;
             aux3->prox = aux4;
-            if(aux != NULL)aux4->ant = aux3; //para não dar erro
+            if(aux4 != NULL)aux4->ant = aux3; //para não dar erro
             aux2->prox = NULL;
             
             //pegar o ultimo da lista dos ordenados
@@ -841,13 +817,27 @@ void ordenarJogadores(TPJogador *jogador){
     free(jogadoresOrdenados);
 }
 
+void salvarNoArquivoJogadores(FILE *rank, TPJogador *jogadores){
+    TPJogador *aux;
+    aux = jogadores;
+    while(aux->prox != NULL){
+        aux = aux->prox;
+        fprintf(rank, "%s", aux->nome);
+        fprintf(rank, "%s", "\r\n");
+        fprintf(rank, "%d", aux->pont);
+        fprintf(rank, "%s", "\r\n");
+        fprintf(rank, "%d", aux->qtdMov);
+        fprintf(rank, "%s", "\r\n");
+    }
+}
+
 void imprimirJogadores(TPJogador *jogador){
     int cont=0;
     TPJogador *aux;
     aux = jogador->prox;
-    printf("   JOGADOR\t\tPONTOS\t\tQTD. MOVIMENTOS\n");
+    printf("   JOGADOR\tPONTOS\t MOVIMENTOS\n");
     while(aux != NULL){
-        printf("%dº %s\t\t%d\t\t%d\n",(cont+1), aux->nome, aux->pont, aux->qtdMov);
+        printf("%dº %s\t  %d\t    %d\n",(cont+1), aux->nome, aux->pont, aux->qtdMov);
         cont++;
         aux = aux->prox;
     }
