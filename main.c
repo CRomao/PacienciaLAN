@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+//#include <impressao.h>
+//#include <verificacao.h>
 
 struct carta{
     int valor;
@@ -26,8 +28,8 @@ typedef struct  pilhaCarta TPPilhaCarta;
 struct jogador{
     char nome[14];
     //int tempo;
-    char pont[5];
-    char qtdMov[5];
+    int pont;
+    int qtdMov;
     struct jogador *prox;
     struct jogador *ant;
 };
@@ -39,7 +41,7 @@ struct historico{
     char visivelCartaAnterior;
     char movEspecial;
     TPCarta *carta;
-    TPCarta * cartaAnterior;
+    TPCarta *cartaAnterior;
     int pilhaOrigem;
     int pilhaDestino;
 };
@@ -84,10 +86,11 @@ int main(int argc, char** argv){
     inicializarHistorico(&movimento);
     
     
-    //contarJogadoresArquivo(rank, &jogador);
-   // imprimirJogadores(&jogador);
-            
-    while(loop == 'N'){
+    contarJogadoresArquivo(rank, &jogador);
+    //imprimirJogadores(&jogador);
+    ordenarJogadores(&jogador);
+    imprimirJogadores(&jogador);
+    /*while(loop == 'N'){
         menu = menuPrincipal();
         if(menu == 1){
             loop = 'S';
@@ -156,7 +159,7 @@ int main(int argc, char** argv){
                     case 5:
                         printf("\nInforme a MONTAGEM que tem a carta: ");
                         scanf("%d", &pOrigem);
-                        valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
+                        //valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
                         pOrigem = verificarMontagem(pOrigem);
@@ -197,7 +200,7 @@ int main(int argc, char** argv){
         }else{
             system("cls");
         }   
-    }
+    }*/
     return (EXIT_SUCCESS);
 }
 
@@ -750,7 +753,7 @@ void contarJogadoresArquivo(FILE *rank, TPJogador *jogadores){
         TPJogador *novoJogador, *aux;
         aux = jogadores;
         novoJogador = malloc(sizeof(TPJogador));
-        iniciarJogador(novoJogador);
+        //iniciarJogador(novoJogador);
          while(!feof(rank)){
                 if(linhas == 3)linhas = 0;
                 fgets(auxS, 14, rank);
@@ -759,18 +762,83 @@ void contarJogadoresArquivo(FILE *rank, TPJogador *jogadores){
                     for(int i=0; auxS[i]!='\r'; i++)novoJogador->nome[i] = auxS[i]; // pegar os nomes
                     linhas++;
                 }else if(linhas == 1){
-                    for(int i=0; auxS[i]!='\r'; i++)novoJogador->pont[i] = auxS[i]; // pegr os pontos
+                    novoJogador->pont = converterParaInteiro(auxS, (tam-2)); // pegar os pontos
                     linhas++;
                 }else if(linhas == 2){
-                    for(int i=0; auxS[i]!='\n'; i++)novoJogador->qtdMov[i] = auxS[i]; // pegar a qtd de movimentos de cada jogador
+                    novoJogador->qtdMov = converterParaInteiro(auxS, (tam-2)); // pegar a qtd de movimentos
                     linhas++;
+                    novoJogador->prox = NULL;
                     aux->prox = novoJogador;
                     novoJogador->ant = aux;
                     aux = aux->prox;
+                    
                     novoJogador = malloc(sizeof(TPJogador));
-                    iniciarJogador(novoJogador);
                 }
         } 
+}
+
+int converterParaInteiro(char *auxS, int tam){ // função para retornar inteiro a pontuação e os movimentos
+    int aux, soma=0;
+    if(tam == 3)aux = 100; // caso o tamanho seja 3
+    if(tam == 2)aux = 10;// caso o tamanho seja 2
+    if(tam == 1)aux = 1;// caso o tamanho seja 1
+    for(int i=0; i<tam; i++){
+        soma += ((auxS[i] - 48 ) * aux);
+        aux = aux/10;
+    }
+    return soma;
+}
+
+void ordenarJogadores(TPJogador *jogador){
+    TPJogador *aux, *jogadoresOrdenados, *ultimoOrdenado, *aux2, *aux3, *aux4;
+    //aux --  navegar nos jogadores;
+    //aux2 -- jogador com maior pontuação da vez a ser retirado;
+    //aux3 -- proximo do jogador a ser retirado;
+    //aux4 -- anterior do jogador a ser retirado;
+    int pontos=0, totalJogadores=0;
+    
+    jogadoresOrdenados = malloc(sizeof(TPJogador));
+    jogadoresOrdenados->prox = NULL;
+    ultimoOrdenado = jogadoresOrdenados;
+    
+    aux = jogador;
+    while(aux->prox != NULL){ // while para pegar o total de jogadores
+        aux = aux->prox;
+        totalJogadores++;
+    }
+    
+    if(totalJogadores > 0){ // caso seja maior que zero, entra aqui
+        for(int i=0; i<totalJogadores; i++){ // for para executar a quantidade de jogadores
+            aux = jogador->prox;
+            while(aux != NULL){//while para pegar o jogador de maior pontuação da vez do for
+                if(pontos < aux->pont){
+                    pontos = aux->pont;
+                    aux2 = aux;
+                }
+                aux = aux->prox;
+            }
+            pontos = 0; // precisa zerar para quando o FOR for interar novamente, pois precisa pegar
+            //o próximo maior da vez
+            
+            //ajustando os jogadores após remover o maior da vez
+            aux3 = aux2->ant;
+            aux4 = aux2->prox;
+            aux3->prox = aux4;
+            if(aux != NULL)aux4->ant = aux3; //para não dar erro
+            aux2->prox = NULL;
+            
+            //pegar o ultimo da lista dos ordenados
+            while(ultimoOrdenado->prox != NULL)ultimoOrdenado = ultimoOrdenado->prox;
+            
+            ultimoOrdenado->prox = aux2;// Adicionando o removido a lista ordenada
+            aux2->ant = ultimoOrdenado;
+            
+        }
+        aux = jogador;//fazendo a ligação do maior da vez retirado e adicionar na ordem correta
+        aux->prox = jogadoresOrdenados->prox;
+        aux->prox->ant = aux;
+    }
+    free(jogadoresOrdenados);
 }
 
 void imprimirJogadores(TPJogador *jogador){
@@ -779,7 +847,7 @@ void imprimirJogadores(TPJogador *jogador){
     aux = jogador->prox;
     printf("   JOGADOR\t\tPONTOS\t\tQTD. MOVIMENTOS\n");
     while(aux != NULL){
-        printf("%dº %s\t\t%s\t\t%s\n",(cont+1), aux->nome, aux->pont, aux->qtdMov);
+        printf("%dº %s\t\t%d\t\t%d\n",(cont+1), aux->nome, aux->pont, aux->qtdMov);
         cont++;
         aux = aux->prox;
     }
@@ -803,31 +871,56 @@ int imprimirHistoricoJogadas(TPHistorico *historico){
     aux = historico->prox;
     printf("   P.Origem\tNaipe/Valor     P.Destino\n");
     printf("-------------------------------------------\n");
+    // caso o proximo seja diferente de null, ele mostra aqui a posição 0, tendo a possibilidade de volltar
+    //para o inicio do jogo.
+    if(aux != NULL){ 
+        printf("0º  (VOLTAR PARA O INICIO DO JOGO)\n");
+    }
     while(aux != NULL){
-        totalRegistros++;// colocar para imprimir o nome referente as pilhas
-        printf("%dº  ",totalRegistros);
-        verificarHistoricoJogadas(aux->pilhaOrigem);
-        printf("\t    ");
-        verificarNaipeValorHistoricoJogada(aux->carta->naipe, aux->carta->valor);
-        printf("      \t");
-        verificarHistoricoJogadas(aux->pilhaDestino);
-        printf("\n");                
-        aux = aux->prox;
+        // caso seja um MovEspecial, entra nesse if
+        //MovEspecial é aquele onde é reposto o estoque.
+        if(aux->movEspecial == 'S'){ 
+            totalRegistros++;
+            printf("%dº  REPOSIÇÂO DE ESTOQUE\n", totalRegistros);
+            aux = aux->prox;
+        }else{
+            totalRegistros++;// colocar para imprimir o nome referente as pilhas
+            printf("%dº  ",totalRegistros);
+            imprimirHistoricoJogadasNomePilhas(aux->pilhaOrigem);
+            printf("\t    ");
+            verificarNaipeValorHistoricoJogada(aux->carta->naipe, aux->carta->valor);
+            printf("      \t");
+            imprimirHistoricoJogadasNomePilhas(aux->pilhaDestino);
+            printf("\n");                
+            aux = aux->prox;
+        }
     }
     printf("-------------------------------------------\n");
     printf("\n");
     return totalRegistros;
 }
 
-void verificarHistoricoJogadas(int valor){
+void imprimirHistoricoJogadasNomePilhas(int valor){
     if(valor < 7){
-        printf("PILHA");
+        printf("PILHA(%d)", (valor + 1));
     }else if(valor == 7){
         printf("ESTOQUE");
     }else if(valor == 8){
         printf("DESCARTE");
     }else if(valor > 8){
-        printf("MONTAGEM");
+        switch(valor){
+            case 9:
+                printf("MONTAGEM(1)");
+                break;
+            case 10:
+                printf("MONTAGEM(2)");
+                break;
+            case 11:
+                printf("MONTAGEM(3)");
+                break;
+            case 12:
+                printf("MONTAGEM(4)");
+        }
     }
 }
 
