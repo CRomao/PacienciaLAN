@@ -44,6 +44,7 @@ struct historico{
     TPCarta *cartaAnterior;
     int pilhaOrigem;
     int pilhaDestino;
+    int pontosJogada;
 };
 typedef struct historico TPHistorico;
 
@@ -62,7 +63,7 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
 void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilhaCarta *pilhasCartas, TPHistorico *movimento, int *contMovimentos, int opc);
 void reporEstoque(TPPilhaCarta *estoque, TPPilhaCarta *descarte);
 void validarcampo(int campo, char tipo);
-void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos);
+void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *historico);
 int qtdDigitos(int valor);
 int condicaoVitoria(TPPilhaCarta *pilhasCartas);
 int verificarMontagem(int montagem);
@@ -103,7 +104,7 @@ int main(int argc, char** argv){
     
     
     while(loop == 'S'){
-        imprimirTemp(&PilhasC, &contMovimentos);
+        imprimirTemp(&PilhasC, &contMovimentos, &movimento);
         printf("\n");
         imprimir(&PilhasC);
         printf("\n");
@@ -406,6 +407,7 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
         newMovimento->movEspecial = 'N';
         newMovimento->pilhaOrigem = pilhaOrigem;
         newMovimento->pilhaDestino = pilhaDestino;
+        newMovimento->pontosJogada = verificarPontosJogada(pilhaOrigem, pilhaDestino);
         registrarMovimento(newMovimento, movimento);
         (*contMovimentos)++;
     }else{
@@ -478,6 +480,7 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         newMovimentoEspecial->visivelCartaAnterior = 'N';
         newMovimentoEspecial->pilhaOrigem = 8;
         newMovimentoEspecial->pilhaDestino = 7;
+        newMovimentoEspecial->pontosJogada = 0;
         registrarMovimento(newMovimentoEspecial, movimento);
         (*contMovimentos)++;
     }else{
@@ -511,6 +514,7 @@ void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte
         newMovimento->movEspecial = 'N';
         newMovimento->pilhaOrigem = 7;
         newMovimento->pilhaDestino = 8;
+        newMovimento->pontosJogada = 0;
         registrarMovimento(newMovimento, movimento);
         (*contMovimentos)++;
     }
@@ -581,7 +585,7 @@ void validarcampo(int campo, char tipo){
     }
 }
 
-void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos){
+void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *historico){
     TPCarta *aux;
     int valor;
     char naipeEstoque, naipe;
@@ -610,7 +614,7 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos){
         }
     }
     //Imprimir pontos
-    printf("          PONTOS: %d", condicaoVitoria(pilhasCarta));
+    printf("          PONTOS: %d", contarPontos(historico));
     printf("\n |_%c_|  ", naipeEstoque);
     
     //VALORES CABEÇALHO
@@ -678,6 +682,16 @@ int validarMovimento(int valorCartaMovida, int valorCartaAcima, char corCartaMov
         }
     }
     return 3;
+}
+int contarPontos(TPHistorico *historico){
+    TPHistorico *aux;
+    aux = historico;
+    int totalPontos=0;
+    while(aux->prox != NULL){
+        aux = aux->prox;
+        totalPontos += aux->pontosJogada;
+    }
+    return totalPontos;
 }
 
 int condicaoVitoria(TPPilhaCarta *pilhasCartas){
@@ -920,4 +934,18 @@ void verificarNaipeValorHistoricoJogada(char naipe, int valor){
     }else{
        printf("%c/%d", naipe, valor);    
     }
+}
+
+int verificarPontosJogada(int origem, int destino){
+   if(origem == 8 && destino >= 9){
+       return 10;
+   }else if(origem == 8 && destino <=6){
+       return 5;
+   }else if(origem <= 6 && destino >=9){
+       return 20;
+   }else if(origem <= 6 && destino <= 6){
+       return 5;
+   }else if(origem >= 9 && destino <= 6){
+       return -15;
+   }
 }
