@@ -152,7 +152,6 @@ int main(int argc, char** argv){
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
-                        imprimir(&PilhasC);
                         break;
                     case 5:
                         printf("\nInforme a MONTAGEM que tem a carta: ");
@@ -171,10 +170,11 @@ int main(int argc, char** argv){
                 fazerMovimentoEstoqueDescarte(&PilhasC[7], &PilhasC[8], &movimento, &contMovimentos);
                 break;
             case 4:
-                histJogada =imprimirHistoricoJogadas(&movimento);
+                histJogada =contarQTDMovimento(&movimento);
                 if(histJogada == 0){
                     printf("Histórico vazio.\n");
                 }else{
+                    imprimirHistoricoJogadas(&movimento);
                     printf("Deseja voltar para uma jogada específica?\n1-SIM\n2-NÃO\n--> ");
                     scanf("%d", &voltarJogada);
                     switch(voltarJogada){
@@ -361,7 +361,12 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
     pilhaDestino--;
     //verificar se o descarte está vazio
     if(pilhasCartas[pilhaOrigem].carta->prox == NULL){
-        printf("O descarte está vazio (DICA: puxe a próxima carta do estoque :) )\n");
+        if(pilhaOrigem == 8){
+            printf("O descarte está vazio (DICA: puxe a próxima carta do estoque :) )\n");
+        }else if(pilhaOrigem == 9 || pilhaOrigem == 10 || pilhaOrigem == 11 || pilhaOrigem == 12){
+            printf("Não tem nenhuma carta na montagem para mover.\n");
+        }
+        
         return ;
     }
     TPCarta *aux, *aux2, *aux3;
@@ -869,7 +874,7 @@ int verificarMontagem(int montagem){
     }
 }
 
-int imprimirHistoricoJogadas(TPHistorico *historico){
+void imprimirHistoricoJogadas(TPHistorico *historico){
     TPHistorico *aux;
     int totalRegistros=0;
     aux = historico->prox;
@@ -901,7 +906,6 @@ int imprimirHistoricoJogadas(TPHistorico *historico){
     }
     printf("-------------------------------------------\n");
     printf("\n");
-    return totalRegistros;
 }
 
 void imprimirHistoricoJogadasNomePilhas(int valor){
@@ -948,4 +952,15 @@ int verificarPontosJogada(int origem, int destino){
    }else if(origem >= 9 && destino <= 6){
        return -15;
    }
+}
+
+int contarQTDMovimento(TPHistorico *historico){
+    TPHistorico *aux;
+    int cont=0;
+    aux = historico->prox;
+    while(aux != NULL){
+        aux = aux->prox;
+        cont++;
+    }
+    return cont;
 }
