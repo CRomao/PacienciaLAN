@@ -67,6 +67,7 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *h
 int qtdDigitos(int valor);
 int condicaoVitoria(TPPilhaCarta *pilhasCartas);
 int verificarMontagem(int montagem);
+int verificarValorPilhaMovimento(int origem, char id );
 int main(int argc, char** argv){
     FILE *rank;
     rank = fopen("rank.txt", "r+"); // vai tentar abrir o arquivo do rank.
@@ -126,39 +127,70 @@ int main(int argc, char** argv){
                         printf("Informe para qual MONTAGEM quer mover: ");
                         scanf("%d", &pDestino);
                         valorC = buscarCarta(&PilhasC[8].carta);
+                        if(verificarValorPilhaMovimento(pDestino, 'M') == -1){
+                            printf("informe o número de montagem válido(1-2-3-4).\n");
+                            break;
+                        }
                         pDestino = verificarMontagem(pDestino);
                         fazerMovimentoPP(9, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 2);
                         break;
                     case 2:
                         printf("Informe para qual PILHA quer mover: ");
                         scanf("%d", &pDestino);
+                        if(verificarValorPilhaMovimento(pDestino, 'P') == -1){
+                            printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            break;
+                        }
                         valorC = buscarCarta(&PilhasC[8].carta);
                         fazerMovimentoPP(9, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
                         break;
                     case 3:
                         printf("\nInforme a PILHA que tem a carta: ");
                         scanf("%d", &pOrigem);
+                        if(verificarValorPilhaMovimento(pOrigem, 'P') == -1){
+                            printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            break;
+                        }
                         valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         printf("\nInforme a MONTAGEM que vai receber a carta: ");
                         scanf("%d", &pDestino);
+                        if(verificarValorPilhaMovimento(pDestino, 'M') == -1){
+                            printf("informe o número de montagem válido(1-2-3-4).\n");
+                            break;
+                        }
                         pDestino = verificarMontagem(pDestino);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 2);
                         break;
                     case 4:
                         printf("\nInforme a PILHA que tem a carta: ");
                         scanf("%d", &pOrigem);
+                        if(verificarValorPilhaMovimento(pOrigem, 'P') == -1){
+                            printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            break;
+                        }
                         printf("\nInforme o VALOR da carta: ");
                         scanf("%d", &valorC);
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
+                        if(verificarValorPilhaMovimento(pDestino, 'P') == -1){
+                            printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            break;
+                        }
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
                         break;
                     case 5:
                         printf("\nInforme a MONTAGEM que tem a carta: ");
                         scanf("%d", &pOrigem);
-                        //valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
+                        if(verificarValorPilhaMovimento(pOrigem, 'M') == -1){
+                            printf("informe o número de montagem válido(1-2-3-4).\n");
+                            break;
+                        }
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
+                        if(verificarValorPilhaMovimento(pDestino, 'P') == -1){
+                            printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            break;
+                        }
                         pOrigem = verificarMontagem(pOrigem);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
                 }
@@ -963,4 +995,13 @@ int contarQTDMovimento(TPHistorico *historico){
         cont++;
     }
     return cont;
+}
+
+int verificarValorPilhaMovimento(int origem, char id ){
+    if(id == 'M'){
+        if((origem > 4 || origem < 0)&& id == 'M')return -1;
+    }else{
+        if((origem > 7 || origem < 0)&& id == 'P')return -1;
+    }
+    return 0;
 }
