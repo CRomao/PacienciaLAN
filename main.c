@@ -27,7 +27,6 @@ typedef struct  pilhaCarta TPPilhaCarta;
 
 struct jogador{
     char nome[14];
-    //int tempo;
     int pont;
     int qtdMov;
     struct jogador *prox;
@@ -79,7 +78,7 @@ int main(int argc, char** argv){
     jogador.ant = NULL;
     jogador.prox = NULL;
     int pOrigem, pDestino, valorC, contMovimentos = 0, opc, menu,voltarJogada, histJogada;
-    char loop = 'N';
+    char loop = 'N', nomeJogador[14];
     iniciarCartas(&cartas);
     embaralharCartas(&cartas);
     inicializarCabecaPilhas(&PilhasC);
@@ -87,7 +86,7 @@ int main(int argc, char** argv){
     distribuicaoInicialEstoque(&PilhasC, &cartas);
     inicializarHistorico(&movimento);
     contarJogadoresArquivo(rank, &jogador);
-    ordenarJogadores(&jogador);
+    //ordenarJogadores(&jogador);
 
     while(loop == 'N'){
         menu = menuPrincipal();
@@ -210,7 +209,7 @@ int main(int argc, char** argv){
                     scanf("%d", &voltarJogada);
                     switch(voltarJogada){
                         case 1:
-                            printf("Para qual jogada deseja voltar?(Informe o número da jogada no canto esquerdo)\n");
+                            printf("Para qual jogada deseja voltar?(Informe o número da jogada no canto esquerdo)\n-->");
                             scanf("%d", &voltarJogada);
                             histJogada = (histJogada - voltarJogada);
                             for(int i=0; i<histJogada; i++)desfazerMovimento(&PilhasC, &movimento, &contMovimentos);
@@ -237,7 +236,26 @@ int main(int argc, char** argv){
         }
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
-            break;
+            printf("Informe o seu nome ou apelido para salvar no RANK.\n-->");
+            getchar();
+            gets(nomeJogador);
+            salvarJogador(&jogador, &nomeJogador, contarPontos(&movimento), contMovimentos);
+            ordenarJogadores(&jogador);
+            printf("%s salvo no RANK com sucesso!\nVeja abaixo a sua posição:\n\n", nomeJogador);
+            imprimirJogadores(&jogador);
+            printf("\n\nDeseja jogar novamente?\n1-SIM\t2-NÂO\n-->");
+            scanf("%d", &opc);
+            switch(opc){
+                case 1:
+                    novoJogo(&cartas, &PilhasC, &movimento, &contMovimentos);
+                    break;
+                case 2:
+                    remove(rank);
+                    rank = fopen("rank.txt", "w");
+                    salvarNoArquivoJogadores(rank, &jogador);
+                    loop = 'N';
+                    break;
+            }
         }else{
             system("cls");
         }   
@@ -459,7 +477,7 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
         registrarMovimento(newMovimento, movimento);
         (*contMovimentos)++;
     }else{
-        printf("\nMovimento inválido\n");
+        printf("\nMovimento inválido.\n");
     }
 }
 
@@ -861,7 +879,7 @@ void ordenarJogadores(TPJogador *jogador){
                 }
                 aux = aux->prox;
             }
-            pontos = 0; // precisa zerar para quando o FOR for interar novamente, pois precisa pegar
+            pontos = 0; // precisa zerar para quando o FOR for iterar novamente, pois precisa pegar
             //o próximo maior da vez
             
             //ajustando os jogadores após remover o maior da vez
@@ -878,7 +896,7 @@ void ordenarJogadores(TPJogador *jogador){
             aux2->ant = ultimoOrdenado;
             
         }
-        aux = jogador;//fazendo a ligação do maior da vez retirado e adicionar na ordem correta
+        aux = jogador;//após ordenar todos os jogadores, joga de volta para a lista que tava(só que ordenado pela pontuação)
         aux->prox = jogadoresOrdenados->prox;
         aux->prox->ant = aux;
     }
@@ -1021,4 +1039,19 @@ int verificarValorPilhaMovimento(int origem, char id ){
         if((origem > 7 || origem < 0)&& id == 'P')return -1;
     }
     return 0;
+}
+
+void salvarJogador(TPJogador *jogadores, char *nomeJogador, int pontos, int mov){
+    TPJogador *novoJogador, *aux;
+    novoJogador = malloc(sizeof(TPJogador));
+    novoJogador->prox = NULL;
+    for(int i=0; i<strlen(nomeJogador); i++)novoJogador->nome[i] = nomeJogador[i];
+    novoJogador->pont = pontos;
+    novoJogador->qtdMov = mov;
+    
+    aux = jogadores;
+    while(aux->prox != NULL)aux = aux->prox;
+    
+    aux->prox = novoJogador;
+    novoJogador->ant = aux;
 }
