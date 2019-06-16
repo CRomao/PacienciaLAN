@@ -84,11 +84,10 @@ int main(int argc, char** argv){
     embaralharCartas(&cartas);
     inicializarCabecaPilhas(&PilhasC);
     distribuicaoInicial(&PilhasC, &cartas);
-    distribuicaoInicialEstoque(&PilhasC[7], &cartas);
+    distribuicaoInicialEstoque(&PilhasC, &cartas);
     inicializarHistorico(&movimento);
     contarJogadoresArquivo(rank, &jogador);
     ordenarJogadores(&jogador);
-    
 
     while(loop == 'N'){
         menu = menuPrincipal();
@@ -112,7 +111,7 @@ int main(int argc, char** argv){
         printf("Escolha a operação: \n");
         printf("1 - Mover | ");
         printf("2 - Desfazer movimento | ");
-        printf("3 - Próxima carta do Estoque | 4 - Histórico de Jogadas\n--> ");
+        printf("3 - Próxima carta do Estoque | 4 - Histórico de Jogadas | 5 - Outras Funções\n--> ");
         scanf("%d", &opc);
         switch(opc){
             case 1:
@@ -223,6 +222,18 @@ int main(int argc, char** argv){
                     }
                     
                 }
+                break;
+            case 5:
+                printf("1 - Novo Jogo | 2 - Voltar para o jogo\n--> ");
+                scanf("%d", &opc);
+                switch(opc){
+                    case 1:
+                        novoJogo(&cartas, &PilhasC, &movimento, &contMovimentos);
+                        break;
+                    case 2:
+                        break;
+                }
+                
         }
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
@@ -303,7 +314,7 @@ void distribuicaoInicialEstoque(TPPilhaCarta *estoque, TPCarta *cartas){
     TPCarta *auxEstoque, *anterior;
 
     for(int i=0; i<tam; i++){
-        auxEstoque = estoque->carta;
+        auxEstoque = estoque[7].carta;
         while(auxEstoque->prox != NULL){
             auxEstoque = auxEstoque->prox;
         }
@@ -761,15 +772,21 @@ void simularDoisPassos(TPPilhaCarta * pilhasCartas){
     }
 }
 
-void novoJogo(TPCarta *cartas, TPPilhaCarta *pilhasCartas){
+void novoJogo(TPCarta *cartas, TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *contMovimentos){
+    int qtdMovimentos, auxContMovimentos;
+    auxContMovimentos = *(contMovimentos);
+    qtdMovimentos = contarQTDMovimento(historico);
+    for(int i=0; i<qtdMovimentos; i++)desfazerMovimento(pilhasCartas, historico, &auxContMovimentos);
+    *(contMovimentos) = auxContMovimentos;
     for(int i=0; i<52; i++){
         cartas[i].ant = NULL;
         cartas[i].prox = NULL;
+        cartas[i].visivel = 'N';
     }
     for(int i=0; i<13; i++)pilhasCartas[i].carta->prox = NULL;
     embaralharCartas(cartas);
     distribuicaoInicial(pilhasCartas, cartas);
-    //distribuicaoInicialEstoque(pilhasCartas[7], cartas);
+    distribuicaoInicialEstoque(pilhasCartas, cartas);
 }
 
 int menuPrincipal(){
