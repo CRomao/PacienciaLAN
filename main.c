@@ -216,7 +216,7 @@ int main(int argc, char** argv){
                 switch(opc){
                     case 1:
                         histJogada =contarQTDMovimento(&movimento);
-                        if(histJogada == 0){
+                        if(histJogada == 0){ 
                             printf("Histórico vazio.\n");
                         }else{
                             imprimirHistoricoJogadas(&movimento);
