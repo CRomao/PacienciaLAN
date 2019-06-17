@@ -6,8 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
-//#include <impressao.h>
-//#include <verificacao.h>
 
 struct carta{
     int valor;
@@ -61,12 +59,26 @@ void registrarMovimento(TPHistorico *newMovimento, TPHistorico *movimento);
 void fazerMovimentoEstoqueDescarte(TPPilhaCarta *estoque, TPPilhaCarta *descarte, TPHistorico *movimento, int *contMovimentos);
 void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilhaCarta *pilhasCartas, TPHistorico *movimento, int *contMovimentos, int opc);
 void reporEstoque(TPPilhaCarta *estoque, TPPilhaCarta *descarte);
-void validarcampo(int campo, char tipo);
 void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *historico);
 int qtdDigitos(int valor);
 int condicaoVitoria(TPPilhaCarta *pilhasCartas);
 int verificarMontagem(int montagem);
 int verificarValorPilhaMovimento(int origem, char id );
+void salvarJogador(TPJogador *jogadores, char *nomeJogador, int pontos, int mov);
+int contarQTDMovimento(TPHistorico *historico);
+int verificarPontosJogada(int origem, int destino);
+void verificarNaipeValorHistoricoJogada(char naipe, int valor);
+void imprimirHistoricoJogadasNomePilhas(int valor);
+void imprimirHistoricoJogadas(TPHistorico *historico);
+void imprimirJogadores(TPJogador *jogador);
+void salvarNoArquivoJogadores(FILE *rank, TPJogador *jogadores);
+void ordenarJogadores(TPJogador *jogador);
+void contarJogadoresArquivo(FILE *rank, TPJogador *jogadores);
+int menuPrincipal();
+void novoJogo(TPCarta *cartas, TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *contMovimentos);
+int contarPontos(TPHistorico *historico);
+void imprimirValorCabecalho(char naipe, int valor);
+void imprimirNaipeCabecalho(char naipe);
 int main(int argc, char** argv){
     FILE *rank;
     rank = fopen("rank.txt", "r+"); // vai tentar abrir o arquivo do rank.
@@ -110,7 +122,7 @@ int main(int argc, char** argv){
         printf("Escolha a operação: \n");
         printf("1 - Mover | ");
         printf("2 - Desfazer movimento | ");
-        printf("3 - Próxima carta do Estoque | 4 - Histórico de Jogadas | 5 - Outras Funções\n--> ");
+        printf("3 - Próxima carta do Estoque | 4 - Histórico de Jogadas | 5 - Outras Funções | 6 - Dicas\n--> ");
         scanf("%d", &opc);
         switch(opc){
             case 1:
@@ -219,7 +231,6 @@ int main(int argc, char** argv){
                         default:
                             break;
                     }
-                    
                 }
                 break;
             case 5:
@@ -232,7 +243,9 @@ int main(int argc, char** argv){
                     case 2:
                         break;
                 }
-                
+            case 6:
+                simularDoisPassos(&PilhasC);
+                break;
         }
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
@@ -339,10 +352,8 @@ void distribuicaoInicialEstoque(TPPilhaCarta *estoque, TPCarta *cartas){
         anterior = auxEstoque; // fazer o apontamento dos anteriores
         auxEstoque->prox = &cartas[i];
         auxEstoque->prox->ant = anterior;
-        
     }
 }
-
 
 void imprimir(TPPilhaCarta *pilhasCarta){
     TPCarta *aux;
@@ -371,7 +382,6 @@ void imprimir(TPPilhaCarta *pilhasCarta){
               }else{
                   printf("  | * |");
               }
-
               aux = aux->prox;
           }
           printf("\n");
@@ -383,7 +393,7 @@ void imprimir(TPPilhaCarta *pilhasCarta){
               if(qtdDigitos(aux->valor) == 1){
                   if(aux->visivel == 'S'){
                       if(aux->naipe == 'O' || aux->naipe == 'C'){
-                        printf(" |_\033[31m%d\033[39m_| ", (char)aux->valor);
+                        printf(" |_\033[31m%d\033[39m_| ", aux->valor);
                       }else{
                         printf(" |_%d_| ", aux->valor);  
                       }
@@ -393,7 +403,7 @@ void imprimir(TPPilhaCarta *pilhasCarta){
               }else{
                   if(aux->visivel == 'S'){
                       if(aux->naipe == 'O' || aux->naipe == 'C'){
-                            printf(" |_\033[31m%d\033[39m| ", (char)aux->valor);
+                            printf(" |_\033[31m%d\033[39m| ", aux->valor);
                       }else{
                             printf(" |_%d| ", aux->valor);
                       }
@@ -621,34 +631,10 @@ int buscarCarta(TPCarta *carta){
     return aux->valor;
 }
 
-void regrasJogo(){
-    
-    
+void regrasJogo(){   
     printf("Pressione qualquer tecla para voltar para o menu...");
     system("pause");
 
-}
-
-void sairJogo(){
-    
-}
-
-void validarcampo(int campo, char tipo){
-    if(tipo = 'P'){
-        if(campo <= 7){
-            return 0;
-        }else{
-            printf("Valor inválido!\n");
-            return -1;
-        }
-    }else if(tipo == 'C'){
-        if(campo <= 13){
-            return 0;
-        }else{
-            printf("Vslor inválido!\n");
-            return -1;
-        }
-    }
 }
 
 void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *historico){
@@ -661,7 +647,6 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *h
     aux = pilhasCarta[7].carta->prox;
     if(aux == NULL){
         naipeEstoque = ' ';
-        
     }else{
         naipeEstoque = '*';
     }
@@ -687,9 +672,8 @@ void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *h
     for(int i=8; i<13; i++){
       aux = pilhasCarta[i].carta->prox;
       if(aux == NULL){
-          valor = 32;
+          valor = 32; // é um espaço em branco, de acordo com a tabela ASCII
           if(i == 9)printf("        ");
-          //if(i == 8)printf(" ");
           imprimirValorCabecalho(naipe, valor);
       }else{
         while(aux->prox != NULL) aux = aux->prox;
@@ -773,23 +757,6 @@ int condicaoVitoria(TPPilhaCarta *pilhasCartas){
     return cont;
 }
 
-
-void simularDoisPassos(TPPilhaCarta * pilhasCartas){
-    int cont = 0, i,j;
-    TPCarta *aux;
-    for(i=0; i<7; i++){
-        aux = pilhasCartas[i].carta;
-        while(aux != NULL){
-            aux = aux->prox;
-            if(aux->visivel == 'S')cont++;
-        }
-        
-        for(j=0; j<cont; j++){
-            
-        }
-    }
-}
-
 void novoJogo(TPCarta *cartas, TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *contMovimentos){
     int qtdMovimentos, auxContMovimentos;
     auxContMovimentos = *(contMovimentos);
@@ -814,14 +781,10 @@ int menuPrincipal(){
     printf("1 - Novo Jogo | 2 - Regras | 3 - Rank | 4 - Sair\n-->");
     scanf("%d", &opc);
     switch(opc){
-        case 1:
-            return 1;
-        case 2:
-            return 2;
-        case 3:
-            return 3;
-        case 4:
-            return 4;
+        case 1: return 1;
+        case 2: return 2;
+        case 3: return 3;
+        case 4: return 4;
     }
 }
 
@@ -971,8 +934,7 @@ void imprimirHistoricoJogadas(TPHistorico *historico){
             aux = aux->prox;
         }
     }
-    printf("-------------------------------------------\n");
-    printf("\n");
+    printf("-------------------------------------------\n\n");
 }
 
 void imprimirHistoricoJogadasNomePilhas(int valor){
@@ -1054,4 +1016,40 @@ void salvarJogador(TPJogador *jogadores, char *nomeJogador, int pontos, int mov)
     
     aux->prox = novoJogador;
     novoJogador->ant = aux;
+}
+
+void simularDoisPassos(TPPilhaCarta *pilhas){
+    TPCarta *aux, *aux2;
+    int i,j, cont=0;
+    for(i=0; i<7; i++){
+        aux = pilhas[i].carta;
+        while(aux->prox != NULL){
+            if(aux->visivel == 'S')break;
+            aux = aux->prox;
+        }
+        j=0;
+        if(j == i)j++;
+        while(j!= i && j<7){
+            aux2 = pilhas[j].carta;
+            while(aux2->prox != NULL)aux2 = aux2->prox;
+            if(aux->cor != aux2->cor && (aux->valor+1) == aux2->valor && aux->valor != 13){
+                if(aux->cor == 'V'){
+                    printf("Mova a CARTA \033[31m%c|%d\033[39m da PILHA %d para a PILHA %d\n", aux->naipe, aux->valor,(i+1), (j+1));
+                }else{
+                    printf("Mova a CARTA %c|%d da PILHA %d para a PILHA %d\n", aux->naipe, aux->valor,(i+1), (j+1));
+                }
+                cont++;
+            }else if(aux->valor == 13 && aux2->valor == -1){
+                if(aux->cor == 'V'){
+                    printf("Mova a CARTA \033[31m%c|%d\033[39m da PILHA %d para a PILHA %d\n", aux->naipe, aux->valor,(i+1), (j+1));
+                }else{
+                    printf("Mova a CARTA %c|%d da PILHA %d para a PILHA %d\n", aux->naipe, aux->valor,(i+1), (j+1));
+                }
+                cont++;
+            }
+            j++;
+            if(j == i)j++;
+        }
+    }
+    if(cont == 0)printf("Não há dicas no momento :(\n");
 }
