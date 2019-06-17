@@ -998,9 +998,9 @@ int contarQTDMovimento(TPHistorico *historico){
 
 int verificarValorPilhaMovimento(int origem, char id ){
     if(id == 'M'){
-        if((origem > 4 || origem < 0)&& id == 'M')return -1;
+        if((origem > 4 || origem <= 0)&& id == 'M')return -1;
     }else{
-        if((origem > 7 || origem < 0)&& id == 'P')return -1;
+        if((origem > 7 || origem <= 0)&& id == 'P')return -1;
     }
     return 0;
 }
