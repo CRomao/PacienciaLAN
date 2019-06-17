@@ -79,6 +79,7 @@ void novoJogo(TPCarta *cartas, TPPilhaCarta *pilhasCartas, TPHistorico *historic
 int contarPontos(TPHistorico *historico);
 void imprimirValorCabecalho(char naipe, int valor);
 void imprimirNaipeCabecalho(char naipe);
+void simularDoisPassos(TPPilhaCarta *pilhas);
 int main(int argc, char** argv){
     FILE *rank;
     rank = fopen("rank.txt", "r+"); // vai tentar abrir o arquivo do rank.
@@ -98,7 +99,6 @@ int main(int argc, char** argv){
     distribuicaoInicialEstoque(&PilhasC, &cartas);
     inicializarHistorico(&movimento);
     contarJogadoresArquivo(rank, &jogador);
-    //ordenarJogadores(&jogador);
 
     while(loop == 'N'){
         menu = menuPrincipal();
