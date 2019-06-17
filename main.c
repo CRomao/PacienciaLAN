@@ -82,8 +82,8 @@ void imprimirNaipeCabecalho(char naipe);
 void simularDoisPassos(TPPilhaCarta *pilhas);
 int main(int argc, char** argv){
     FILE *rank;
-    rank = fopen("rank.txt", "r+"); // vai tentar abrir o arquivo do rank.
-    if(rank == NULL)rank = fopen("rank.txt", "w+"); // se não existir, ele cria o arquivo.
+    rank = fopen("rank.txt", "r+"); // vai tentar abrir o arquivo do rank em RW.
+    if(rank == NULL)rank = fopen("rank.txt", "w+"); // se não existir, ele cria o arquivo em RW.
     TPCarta cartas[52];
     TPPilhaCarta PilhasC[13];
     TPHistorico movimento;
@@ -92,28 +92,27 @@ int main(int argc, char** argv){
     jogador.prox = NULL;
     int pOrigem, pDestino, valorC, contMovimentos = 0, opc, menu,voltarJogada, histJogada;
     char loop = 'N', nomeJogador[14];
-    iniciarCartas(&cartas);
-    embaralharCartas(&cartas);
-    inicializarCabecaPilhas(&PilhasC);
-    distribuicaoInicial(&PilhasC, &cartas);
-    distribuicaoInicialEstoque(&PilhasC, &cartas);
-    inicializarHistorico(&movimento);
     contarJogadoresArquivo(rank, &jogador);
 
     while(loop == 'N'){
         menu = menuPrincipal();
         if(menu == 1){
             loop = 'S';
+            iniciarCartas(&cartas);
+            embaralharCartas(&cartas);
+            inicializarCabecaPilhas(&PilhasC);
+            distribuicaoInicial(&PilhasC, &cartas);
+            distribuicaoInicialEstoque(&PilhasC, &cartas);
+            inicializarHistorico(&movimento);
         }else if( menu == 2){
             regrasJogo();
         }else if( menu == 3){
             imprimirJogadores(&jogador);
         }else if(menu == 4){
-            break;
+            exit(0);
         }
     }
-    
-    
+        
     while(loop == 'S'){
         imprimirTemp(&PilhasC, &contMovimentos, &movimento);
         printf("\n");
@@ -122,7 +121,7 @@ int main(int argc, char** argv){
         printf("Escolha a operação: \n");
         printf("1 - Mover | ");
         printf("2 - Desfazer movimento | ");
-        printf("3 - Próxima carta do Estoque | 4 - Histórico de Jogadas | 5 - Outras Funções | 6 - Dicas\n--> ");
+        printf("3 - Próxima carta do Estoque | 4 - Outras Funções | 0 - Sair\n--> ");
         scanf("%d", &opc);
         switch(opc){
             case 1:
@@ -212,40 +211,43 @@ int main(int argc, char** argv){
                 fazerMovimentoEstoqueDescarte(&PilhasC[7], &PilhasC[8], &movimento, &contMovimentos);
                 break;
             case 4:
-                histJogada =contarQTDMovimento(&movimento);
-                if(histJogada == 0){
-                    printf("Histórico vazio.\n");
-                }else{
-                    imprimirHistoricoJogadas(&movimento);
-                    printf("Deseja voltar para uma jogada específica?\n1-SIM\n2-NÃO\n--> ");
-                    scanf("%d", &voltarJogada);
-                    switch(voltarJogada){
-                        case 1:
-                            printf("Para qual jogada deseja voltar?(Informe o número da jogada no canto esquerdo)\n-->");
-                            scanf("%d", &voltarJogada);
-                            histJogada = (histJogada - voltarJogada);
-                            for(int i=0; i<histJogada; i++)desfazerMovimento(&PilhasC, &movimento, &contMovimentos);
-                            break;
-                        case 2:
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                break;
-            case 5:
-                printf("1 - Novo Jogo | 2 - Voltar para o jogo\n--> ");
+                printf("1 - Histórico de Jogadas | 2 - Dicas | 3 - Novo Jogo | 4 - Voltar para o jogo\n--> ");
                 scanf("%d", &opc);
                 switch(opc){
                     case 1:
+                        histJogada =contarQTDMovimento(&movimento);
+                        if(histJogada == 0){
+                            printf("Histórico vazio.\n");
+                        }else{
+                            imprimirHistoricoJogadas(&movimento);
+                            printf("Deseja voltar para uma jogada específica?\n1-SIM\n2-NÃO\n--> ");
+                            scanf("%d", &voltarJogada);
+                            switch(voltarJogada){
+                                case 1:
+                                    printf("Para qual jogada deseja voltar?(Informe o número da jogada no canto esquerdo)\n-->");
+                                    scanf("%d", &voltarJogada);
+                                    histJogada = (histJogada - voltarJogada);
+                                    for(int i=0; i<histJogada; i++)desfazerMovimento(&PilhasC, &movimento, &contMovimentos);
+                                    break;
+                                case 2:
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        break;
+                    case 2://Dicas
+                        simularDoisPassos(&PilhasC);
+                        break;
+                    case 3:
                         novoJogo(&cartas, &PilhasC, &movimento, &contMovimentos);
                         break;
-                    case 2:
+                    case 4:
                         break;
                 }
-            case 6:
-                simularDoisPassos(&PilhasC);
                 break;
+            case 0:
+                exit(0);
         }
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
