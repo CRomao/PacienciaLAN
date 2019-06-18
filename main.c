@@ -71,7 +71,7 @@ void verificarNaipeValorHistoricoJogada(char naipe, int valor);
 void imprimirHistoricoJogadasNomePilhas(int valor);
 void imprimirHistoricoJogadas(TPHistorico *historico);
 void imprimirJogadores(TPJogador *jogador);
-void salvarNoArquivoJogadores(FILE *rank, TPJogador *jogadores);
+void salvarNoArquivoJogadores(FILE **rank, TPJogador *jogadores);
 void ordenarJogadores(TPJogador *jogador);
 void contarJogadoresArquivo(FILE *rank, TPJogador *jogadores);
 int menuPrincipal();
@@ -251,12 +251,12 @@ int main(int argc, char** argv){
         }
         if(condicaoVitoria(&PilhasC) == 52){
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
-            printf("Informe o seu nome ou apelido para salvar no RANK.\n-->");
+            printf("Informe o seu nome ou apelido para salvar no RANK(mínimo 5 caracteres).\n-->");
             getchar();
             gets(nomeJogador);
             salvarJogador(&jogador, &nomeJogador, contarPontos(&movimento), contMovimentos);
             ordenarJogadores(&jogador);
-            printf("%s salvo no RANK com sucesso!\nVeja abaixo a sua posição:\n\n", nomeJogador);
+            printf("\n%s salvo no RANK com sucesso!\nVeja abaixo a sua posição:\n\n", nomeJogador);
             imprimirJogadores(&jogador);
             printf("\n\nDeseja jogar novamente?\n1-SIM\t2-NÂO\n-->");
             scanf("%d", &opc);
@@ -267,7 +267,7 @@ int main(int argc, char** argv){
                 case 2:
                     remove(rank);
                     rank = fopen("rank.txt", "w");
-                    salvarNoArquivoJogadores(rank, &jogador);
+                    salvarNoArquivoJogadores(&rank, &jogador);
                     loop = 'N';
                     break;
             }
@@ -868,17 +868,17 @@ void ordenarJogadores(TPJogador *jogador){
     free(jogadoresOrdenados);
 }
 
-void salvarNoArquivoJogadores(FILE *rank, TPJogador *jogadores){
+void salvarNoArquivoJogadores(FILE **rank, TPJogador *jogadores){
     TPJogador *aux;
     aux = jogadores;
     while(aux->prox != NULL){
         aux = aux->prox;
-        fprintf(rank, "%s", aux->nome);
-        fprintf(rank, "%s", "\r\n");
-        fprintf(rank, "%d", aux->pont);
-        fprintf(rank, "%s", "\r\n");
-        fprintf(rank, "%d", aux->qtdMov);
-        fprintf(rank, "%s", "\r\n");
+        fprintf(*rank, "%s", aux->nome);
+        fprintf(*rank, "%s", "\r\n");
+        fprintf(*rank, "%d", aux->pont);
+        fprintf(*rank, "%s", "\r\n");
+        fprintf(*rank, "%d", aux->qtdMov);
+        fprintf(*rank, "%s", "\r\n");
     }
 }
 
@@ -886,6 +886,10 @@ void imprimirJogadores(TPJogador *jogador){
     int cont=0;
     TPJogador *aux;
     aux = jogador->prox;
+    if(aux == NULL){
+        printf("Sem jogadores no RANK.\n");
+        return ;
+    }
     printf("   JOGADOR\tPONTOS\t MOVIMENTOS\n");
     while(aux != NULL){
         printf("%dº %s\t  %d\t    %d\n",(cont+1), aux->nome, aux->pont, aux->qtdMov);
