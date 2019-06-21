@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <string.h>
 
 struct carta{
     int valor;
@@ -80,6 +81,7 @@ int contarPontos(TPHistorico *historico);
 void imprimirValorCabecalho(char naipe, int valor);
 void imprimirNaipeCabecalho(char naipe);
 void simularDoisPassos(TPPilhaCarta *pilhas);
+void regrasJogo();
 int main(int argc, char** argv){
     FILE *rank;
     rank = fopen("rank.txt", "r+"); // vai tentar abrir o arquivo do rank em RW.
@@ -106,13 +108,21 @@ int main(int argc, char** argv){
             inicializarHistorico(&movimento);
         }else if( menu == 2){
             regrasJogo();
+            getchar();
+            printf("\nPressione Enter...\n");
+            getchar(); 
+            system("clear");
         }else if( menu == 3){
             imprimirJogadores(&jogador);
+            getchar();
+            printf("\nPressione Enter...\n");
+            getchar();
+            system("clear");
         }else if(menu == 4){
             exit(0);
         }
     }
-        
+    system("clear");
     while(loop == 'S'){
         imprimirTemp(&PilhasC, &contMovimentos, &movimento);
         printf("\n");
@@ -128,7 +138,7 @@ int main(int argc, char** argv){
                 printf("1 - Mover de DESCARTE para MONTAGEM | ");
                 printf("2 - Mover de DESCARTE para PILHA | ");
                 printf("3 - Mover de PILHA para MONTAGEM | ");
-                printf("4 - Mover de PILHA para PILHA | ");
+                printf("4 - Mover de PILHA para PILHA |\n");
                 printf("5 - Mover de MONTAGEM para PILHA\n-->");
                 scanf("%d", &opc);
                 switch(opc){
@@ -138,6 +148,7 @@ int main(int argc, char** argv){
                         valorC = buscarCarta(&PilhasC[8].carta);
                         if(verificarValorPilhaMovimento(pDestino, 'M') == -1){
                             printf("informe o número de montagem válido(1-2-3-4).\n");
+                            sleep(3);
                             break;
                         }
                         pDestino = verificarMontagem(pDestino);
@@ -148,6 +159,7 @@ int main(int argc, char** argv){
                         scanf("%d", &pDestino);
                         if(verificarValorPilhaMovimento(pDestino, 'P') == -1){
                             printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            sleep(3);
                             break;
                         }
                         valorC = buscarCarta(&PilhasC[8].carta);
@@ -158,6 +170,7 @@ int main(int argc, char** argv){
                         scanf("%d", &pOrigem);
                         if(verificarValorPilhaMovimento(pOrigem, 'P') == -1){
                             printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            sleep(3);
                             break;
                         }
                         valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
@@ -165,6 +178,7 @@ int main(int argc, char** argv){
                         scanf("%d", &pDestino);
                         if(verificarValorPilhaMovimento(pDestino, 'M') == -1){
                             printf("informe o número de montagem válido(1-2-3-4).\n");
+                            sleep(3);
                             break;
                         }
                         pDestino = verificarMontagem(pDestino);
@@ -173,8 +187,9 @@ int main(int argc, char** argv){
                     case 4:
                         printf("\nInforme a PILHA que tem a carta: ");
                         scanf("%d", &pOrigem);
-                        if(verificarValorPilhaMovimento(pOrigem, 'P') == -1){
+                        if(verificarValorPilhaMovimento(pOrigem, 'P') == -1){                            
                             printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            sleep(3);
                             break;
                         }
                         printf("\nInforme o VALOR da carta: ");
@@ -183,6 +198,7 @@ int main(int argc, char** argv){
                         scanf("%d", &pDestino);
                         if(verificarValorPilhaMovimento(pDestino, 'P') == -1){
                             printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            sleep(3);
                             break;
                         }
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
@@ -192,15 +208,18 @@ int main(int argc, char** argv){
                         scanf("%d", &pOrigem);
                         if(verificarValorPilhaMovimento(pOrigem, 'M') == -1){
                             printf("informe o número de montagem válido(1-2-3-4).\n");
+                            sleep(3);
                             break;
                         }
                         printf("\nInforme a PILHA que vai receber a carta: ");
                         scanf("%d", &pDestino);
                         if(verificarValorPilhaMovimento(pDestino, 'P') == -1){
                             printf("informe o número de pilha válido(1-2-3-4-5-6-7).\n");
+                            sleep(3);
                             break;
                         }
                         pOrigem = verificarMontagem(pOrigem);
+                        valorC = buscarCarta(PilhasC[(pOrigem-1)].carta);
                         fazerMovimentoPP(pOrigem, valorC, pDestino, &PilhasC, &movimento, &contMovimentos, 1);
                 }
                 break;
@@ -217,7 +236,8 @@ int main(int argc, char** argv){
                     case 1:
                         histJogada =contarQTDMovimento(&movimento);
                         if(histJogada == 0){ 
-                            printf("Histórico vazio.\n");
+                            printf("\nHistórico vazio.\n");
+                            sleep(3);
                         }else{
                             imprimirHistoricoJogadas(&movimento);
                             printf("Deseja voltar para uma jogada específica?\n1-SIM\n2-NÃO\n--> ");
@@ -237,6 +257,7 @@ int main(int argc, char** argv){
                         }
                         break;
                     case 2://Dicas
+                        getchar();
                         simularDoisPassos(&PilhasC);
                         break;
                     case 3:
@@ -272,7 +293,7 @@ int main(int argc, char** argv){
                     break;
             }
         }else{
-            system("cls");
+            system("clear");
         }   
     }
     return (EXIT_SUCCESS);
@@ -311,8 +332,6 @@ void iniciarCartas(TPCarta *cartas){
  
 void inicializarCabecaPilhas(TPPilhaCarta *pilhasCarta){
     int i;
-    TPCarta *aux;
-    aux = malloc(sizeof(TPCarta));
     for(i=0; i<13; i++){
         pilhasCarta[i].carta = malloc(sizeof(TPCarta));
         pilhasCarta[i].carta->ant = NULL;
@@ -435,9 +454,11 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
     //verificar se o descarte está vazio
     if(pilhasCartas[pilhaOrigem].carta->prox == NULL){
         if(pilhaOrigem == 8){
-            printf("O descarte está vazio (DICA: puxe a próxima carta do estoque :) )\n");
+            printf("\nO descarte está vazio (DICA: puxe a próxima carta do estoque :) )\n");
+            sleep(3);
         }else if(pilhaOrigem == 9 || pilhaOrigem == 10 || pilhaOrigem == 11 || pilhaOrigem == 12){
-            printf("Não tem nenhuma carta na montagem para mover.\n");
+            printf("\nNão tem nenhuma carta na montagem para mover.\n");
+            sleep(3);
         }
         
         return ;
@@ -490,12 +511,14 @@ void fazerMovimentoPP(int pilhaOrigem, int valorCarta, int pilhaDestino, TPPilha
         (*contMovimentos)++;
     }else{
         printf("\nMovimento inválido.\n");
+        sleep(3);
     }
 }
 
 void desfazerMovimento(TPPilhaCarta *pilhasCartas, TPHistorico *historico, int *contMovimentos){
     if(historico->prox == NULL){
-        printf("Ainda não consta nenhum movimento feito.\n");
+        printf("\nAinda não consta nenhum movimento feito.\n");
+        sleep(3);
     }else{
         TPHistorico *aux, *anteriorAux;
         TPCarta *destino, *auxDestino;
@@ -634,9 +657,45 @@ int buscarCarta(TPCarta *carta){
 }
 
 void regrasJogo(){   
-    printf("Pressione qualquer tecla para voltar para o menu...");
-    system("pause");
+    printf("\n");
+    printf("-> Objetivo: \n"
+           "Mover todas as 52 cartas para as MONTAGENS em ordem crescente no naipe.\n\n");
 
+    printf("-> Sobre o Jogo: \n\n"
+           "- Montagem: \n"
+           "Existem 4 na parte superior direita, e cada montagem recebe um tipo de naipe.\n\n"
+           "- Pilhas: \n"
+           "São 7 ao todo, e devem ser organizadas em sequência decrescente e com cores alternadas.\n"
+           "Podem ser movidas em grupos.\n"
+           "Os espaços em branco devem ser destinados ao Rei(13), ou grupos de cartas com o Rei sendo a maior carta.\n\n"
+           "- Estoque: \n"
+           "Localizado no canto superior esquerdo.\n"
+           "Puxe uma carta por vez.\n"
+           "Quando todas as cartas forem passadas para o descarte, selecione novamente a opção de próxima carta do estoque\n"
+            "para fazer a reposição das cartas.\n\n"
+           "- Descarte: \n"
+           "Localizado ao lado do estoque.\n"
+           "Apenas a carta do topo pode ser utilizada para mover tanto nas montagens quanto nas pilhas.\n\n");
+
+    printf("Identificação das cartas: \n"
+           "1-A, 2-2, 3-3, 4-4, 5-5, 6-6, 7-7, 8-8, 9-9, 10-10, 11-J, 12-Q, 13-K \n"
+           "C-Coroa, P-Paus, E-Espadas, O-Ouros\n\n");
+
+    printf("-> Jogabilidade: \n"
+           "Selecione a Opção Mover; \n"
+           "Escolha o tipo de movimentação; \n"
+           "Preencha com a localizaão da carta pedida(somente quando for de pilha para pilha); \n"
+           "Continue até atingir o Objetivo;\n");
+    printf("-Para puxar uma nova carta do Estoque: \n"
+           "Escolha a opção Proxima carta do Estoque;\n\n");
+    printf("-Para desfazer algum movimento: \n"
+           "Escolha a opção Desfazer Movimento;\n\n");
+    printf("-Para momentos de dúvidas é possivel pedir uma dica: \n"
+           "Basta ir em Outras Funções -> Dicas \n\n");
+    printf("-Para quando não houver mais dicas ou possibilidades: \n"
+           "Basta ir em Outras Funções -> Novo Jogo \n\n");
+    printf("-Através do Histórico é possível retornar para qualquer momento do jogo, do inicio ao momento atual\n"
+           "Basta ir em Outras Funções -> Histórico de Jogadas\n");
 }
 
 void imprimirTemp(TPPilhaCarta *pilhasCarta, int *contMovimentos, TPHistorico *historico){
@@ -887,7 +946,7 @@ void imprimirJogadores(TPJogador *jogador){
     TPJogador *aux;
     aux = jogador->prox;
     if(aux == NULL){
-        printf("Sem jogadores no RANK.\n");
+        printf("\nSem jogadores no RANK.\n");
         return ;
     }
     printf("   JOGADOR\tPONTOS\t MOVIMENTOS\n");
@@ -1027,6 +1086,7 @@ void salvarJogador(TPJogador *jogadores, char *nomeJogador, int pontos, int mov)
 void simularDoisPassos(TPPilhaCarta *pilhas){
     TPCarta *aux, *aux2;
     int i,j, cont=0;
+    printf("\n");
     for(i=0; i<7; i++){
         aux = pilhas[i].carta;
         while(aux->prox != NULL){
@@ -1057,5 +1117,11 @@ void simularDoisPassos(TPPilhaCarta *pilhas){
             if(j == i)j++;
         }
     }
-    if(cont == 0)printf("Não há dicas no momento :(\n");
+    if(cont == 0){
+        printf("Não há dicas no momento :(\n");
+        sleep(3);
+    }else{
+        printf("\nPressione Enter...\n");
+        getchar();
+    }
 }
