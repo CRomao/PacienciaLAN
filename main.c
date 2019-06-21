@@ -89,12 +89,12 @@ int main(int argc, char** argv){
     TPCarta cartas[52];
     TPPilhaCarta PilhasC[13];
     TPHistorico movimento;
-    TPJogador jogador;
-    jogador.ant = NULL;
-    jogador.prox = NULL;
+    TPJogador *jogador;
+    jogador = malloc(sizeof(TPJogador));
+    jogador->ant = NULL, jogador->prox = NULL, jogador->nome[0] = '\0', jogador->pont = 0, jogador->qtdMov = 0;
     int pOrigem, pDestino, valorC, contMovimentos = 0, opc, menu,voltarJogada, histJogada;
     char loop = 'N', nomeJogador[14];
-    contarJogadoresArquivo(rank, &jogador);
+    contarJogadoresArquivo(rank, jogador);
 
     while(loop == 'N'){
         menu = menuPrincipal();
@@ -113,7 +113,7 @@ int main(int argc, char** argv){
             getchar(); 
             system("clear");
         }else if( menu == 3){
-            imprimirJogadores(&jogador);
+            imprimirJogadores(jogador);
             getchar();
             printf("\nPressione Enter...\n");
             getchar();
@@ -271,14 +271,19 @@ int main(int argc, char** argv){
                 exit(0);
         }
         if(condicaoVitoria(&PilhasC) == 52){
+            system("clear");
+            imprimirTemp(&PilhasC, &contMovimentos, &movimento);
+            printf("\n");
+            imprimir(&PilhasC);
+            printf("\n");
             printf("\n\nPARABÉNS, VOCÊ TERMINOU!!!\n\n");
             printf("Informe o seu nome ou apelido para salvar no RANK(mínimo 5 caracteres).\n-->");
             getchar();
             gets(nomeJogador);
-            salvarJogador(&jogador, &nomeJogador, contarPontos(&movimento), contMovimentos);
-            ordenarJogadores(&jogador);
+            salvarJogador(jogador, &nomeJogador, contarPontos(&movimento), contMovimentos);
+            ordenarJogadores(jogador);
             printf("\n%s salvo no RANK com sucesso!\nVeja abaixo a sua posição:\n\n", nomeJogador);
-            imprimirJogadores(&jogador);
+            imprimirJogadores(jogador);
             printf("\n\nDeseja jogar novamente?\n1-SIM\t2-NÂO\n-->");
             scanf("%d", &opc);
             switch(opc){
@@ -288,7 +293,7 @@ int main(int argc, char** argv){
                 case 2:
                     remove(rank);
                     rank = fopen("rank.txt", "w");
-                    salvarNoArquivoJogadores(&rank, &jogador);
+                    salvarNoArquivoJogadores(&rank, jogador);
                     loop = 'N';
                     break;
             }
