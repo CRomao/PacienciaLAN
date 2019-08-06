@@ -1,6 +1,6 @@
 # PacienciaLAN
 
-Projeto final da disciplina de Estrutura de Dados, onde foi solicitado o desenvolvimento do jogo "Paciência" com todas as funcionalidades
+Projeto final da disciplina de Estrutura de Dados do curso de Sistemas de Informação, onde foi solicitado o desenvolvimento do jogo "Paciência" com todas as funcionalidades
 do jogo, incluindo funcionalidades extras, como:
 
 * Histórico de Jogadas;
@@ -8,8 +8,10 @@ do jogo, incluindo funcionalidades extras, como:
 * Rank de Jogadores;
 
 
-- O Rank dos Jogadores é ordenado pela pontuação e é salvo em um arquivo TXT, onde armazena:
+O Rank dos Jogadores é ordenado pela pontuação e é salvo em um arquivo TXT, onde armazena:
 
 * Nome ou apelido do jogador;
 * Pontuação do jogo;
 * Quantidade de movimentos;
+
+Essas informações são gravadas quando o jogador finaliza o jogo.
