@@ -6,3 +6,10 @@ do jogo, incluindo funcionalidades extras, como:
 * Histórico de Jogadas;
 * Dicas de Movimentos Possíveis;
 * Rank de Jogadores;
+
+
+- O Rank dos Jogadores é ordenado pela pontuação e é salvo em um arquivo TXT, onde armazena:
+
+* Nome ou apelido do jogador;
+* Pontuação do jogo;
+* Quantidade de movimentos;
