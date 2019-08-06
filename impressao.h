@@ -1,1 +1,0 @@
-void imprimir(TPPilhaCarta *pilhasCarta); 
