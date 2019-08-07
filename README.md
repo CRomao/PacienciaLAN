@@ -12,7 +12,7 @@ No desenvolvimento do jogo foi utilizado:
 * Structs;
 * Ponteiros;
 * Malloc - para alocação de memória;
-* LDE - Listas Dinamicamente Encadeadas.
+* LDE - Listas Duplamente Encadeadas.
 
 
 O Rank dos Jogadores é ordenado pela pontuação e é salvo em um arquivo TXT, onde armazena:
