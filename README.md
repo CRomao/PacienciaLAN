@@ -5,7 +5,14 @@ do jogo, incluindo funcionalidades extras, como:
 
 * Histórico de Jogadas;
 * Dicas de Movimentos Possíveis;
-* Rank de Jogadores;
+* Rank de Jogadores.
+
+No desenvolvimento do jogo foi utilizado:
+
+* Structs;
+* Ponteiros;
+* Malloc - para alocação de memória;
+* LDE - Listas Dinamicamente Encadeadas.
 
 
 O Rank dos Jogadores é ordenado pela pontuação e é salvo em um arquivo TXT, onde armazena:
